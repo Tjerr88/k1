@@ -287,7 +287,7 @@ body{
       <div class="hd">
         <div>
           <h1>Settings</h1>
-          <div class="sub">2/3/4 dagen + SN/MP bells + optioneel 1RM (voor roll 1 advies).</div>
+          <div class="sub">2/3/4 dagen + Initial Tests (SN & MP) + optioneel 1RM. Tests kunnen automatisch je startgewichten + startpunt instellen.</div>
         </div>
         <span class="pill"><strong>Config</strong></span>
       </div>
@@ -320,9 +320,77 @@ body{
           </div>
         </div>
 
+        
+        <div class="hr"></div>
+
+        <div class="card" style="margin:0; box-shadow:none; border-radius:16px;">
+          <div class="hd" style="padding:12px 12px 10px;">
+            <div>
+              <h2>Initial Tests</h2>
+              <div class="sub">Vul je testresultaten in. De app zet automatisch je SN/MP startgewichten en startpunt en reset het programma naar Day 1.</div>
+            </div>
+            <span class="pill"><strong>Setup</strong></span>
+          </div>
+          <div class="bd" style="padding:12px;">
+            <div class="grid">
+              <div class="field">
+                <label for="snTestBell">Snatch test bell (kg)</label>
+                <input id="snTestBell" inputmode="decimal" placeholder="e.g. 24">
+              </div>
+              <div class="field">
+                <label for="snTestL">Snatch reps — left (non-dominant)</label>
+                <input id="snTestL" inputmode="numeric" placeholder="e.g. 22">
+              </div>
+              <div class="field">
+                <label for="snTestR">Snatch reps — right (dominant)</label>
+                <input id="snTestR" inputmode="numeric" placeholder="e.g. 24">
+              </div>
+              <div class="toggle">
+                <input type="checkbox" id="snTestQuality" checked>
+                <div>
+                  <div style="font-weight:950">All reps explosive (no visible power drop)</div>
+                  <div class="small">Als dit niet klopt, kiest de app conservatief een lichtere bell.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hr"></div>
+
+            <div class="grid">
+              <div class="field">
+                <label for="mpTestBell">Press test bell (kg)</label>
+                <input id="mpTestBell" inputmode="decimal" placeholder="e.g. 24">
+                <div class="small">Dit is je eerste 6–12RM inschatting.</div>
+              </div>
+              <div class="field">
+                <label for="mpTestND">Press max reps — non-dominant arm</label>
+                <input id="mpTestND" inputmode="numeric" placeholder="e.g. 8">
+              </div>
+              <div class="field">
+                <label for="mpTestNext">Optional: reps on next bell up (+4 kg)</label>
+                <input id="mpTestNext" inputmode="numeric" placeholder="e.g. 6">
+                <div class="small">Volgens de tekst alleen nodig als je 10+ reps haalde op je testbell.</div>
+              </div>
+            </div>
+
+            <div class="hr"></div>
+
+            <div class="badges" style="justify-content:space-between">
+              <span class="badge blue">SN recommendation: <span class="mono" id="snRec">—</span></span>
+              <span class="badge blue">MP recommendation: <span class="mono" id="mpRec">—</span></span>
+            </div>
+
+            <div class="hr"></div>
+
+            <button class="btn warn" id="btnApplyTests">Apply tests → set start weights & restart program</button>
+            <div class="small" id="testMsg" style="margin-top:8px"></div>
+          </div>
+        </div>
+
         <div class="hr"></div>
 
         <button class="btn primary" id="btnSave">Save</button>
+
         <div class="small" id="saveMsg" style="margin-top:8px"></div>
 
         <div class="hr"></div>
@@ -411,7 +479,7 @@ function escapeHtml(s){
 
 /* ---- STATE ---- */
 const DEFAULT = {
-  settings:{freq:4, snBell:"24", mpBell:"24", mp1rm:""},
+  settings:{freq:4, snBell:"24", mpBell:"24", mp1rm:"", snTestBell:"", snTestL:"", snTestR:"", snTestQuality:true, mpTestBell:"", mpTestND:"", mpTestNext:""},
   sessionIndex:0,
   dayNumber:1,
   pressAlt:"A",
@@ -934,25 +1002,202 @@ tabs.forEach(t=>{
 });
 
 /* ---- Settings ---- */
+
 function renderSettings(){
   document.getElementById("freq").value = String(state.settings.freq||4);
   document.getElementById("snBell").value = state.settings.snBell ?? "";
   document.getElementById("mpBell").value = state.settings.mpBell ?? "";
   document.getElementById("mp1rm").value = state.settings.mp1rm ?? "";
   document.getElementById("saveMsg").textContent = "";
+
+  // Initial tests fields (stored in settings)
+  document.getElementById("snTestBell").value = state.settings.snTestBell ?? "";
+  document.getElementById("snTestL").value = state.settings.snTestL ?? "";
+  document.getElementById("snTestR").value = state.settings.snTestR ?? "";
+  document.getElementById("snTestQuality").checked = (state.settings.snTestQuality ?? true);
+
+  document.getElementById("mpTestBell").value = state.settings.mpTestBell ?? "";
+  document.getElementById("mpTestND").value = state.settings.mpTestND ?? "";
+  document.getElementById("mpTestNext").value = state.settings.mpTestNext ?? "";
+
+  updateTestRecommendations();
+  document.getElementById("testMsg").textContent = "";
 }
 
 function saveSettings(){
+
   state.settings.freq = Number(document.getElementById("freq").value);
   state.settings.snBell = document.getElementById("snBell").value.trim();
   state.settings.mpBell = document.getElementById("mpBell").value.trim();
   state.settings.mp1rm = document.getElementById("mp1rm").value.trim();
+  // Persist initial test fields (no automatic changes unless you press Apply)
+  state.settings.snTestBell = document.getElementById("snTestBell").value.trim();
+  state.settings.snTestL = document.getElementById("snTestL").value.trim();
+  state.settings.snTestR = document.getElementById("snTestR").value.trim();
+  state.settings.snTestQuality = document.getElementById("snTestQuality").checked;
+
+  state.settings.mpTestBell = document.getElementById("mpTestBell").value.trim();
+  state.settings.mpTestND = document.getElementById("mpTestND").value.trim();
+  state.settings.mpTestNext = document.getElementById("mpTestNext").value.trim();
+
   save();
   render();
   document.getElementById("saveMsg").textContent = "Saved.";
   setTimeout(()=> document.getElementById("saveMsg").textContent="", 1000);
 }
 
+
+function updateTestRecommendations(){
+  const snBell = num(document.getElementById("snTestBell").value);
+  const snL = parseInt(document.getElementById("snTestL").value, 10);
+  const snR = parseInt(document.getElementById("snTestR").value, 10);
+  const quality = document.getElementById("snTestQuality").checked;
+
+  let snRec = "—";
+  if(snBell!==null && Number.isFinite(snL) && Number.isFinite(snR)){
+    const mn = Math.min(snL, snR);
+    const mx = Math.max(snL, snR);
+    let rec = snBell;
+    if(!quality) rec = snBell - 4;
+    else if(mn < 20) rec = snBell - 4;
+    else if(mx > 25 && mn >= 20) rec = snBell + 4;
+    rec = Math.max(0, roundDown4(rec));
+    snRec = `${rec} kg` + ((rec===snBell) ? " (use test bell)" : " (adjusted)");
+  } else if(snBell!==null){
+    snRec = `${roundDown4(snBell)} kg (enter reps)`;
+  }
+
+  const mpBell = num(document.getElementById("mpTestBell").value);
+  const mpND = parseInt(document.getElementById("mpTestND").value, 10);
+  const mpNext = parseInt(document.getElementById("mpTestNext").value, 10);
+
+  let mpRec = "—";
+  if(mpBell!==null && Number.isFinite(mpND)){
+    let recBell = mpBell;
+    let recLadder = "123";
+
+    if(mpND < 6){
+      recBell = mpBell - 4;
+      recLadder = "123";
+    }else if(mpND >= 10){
+      if(Number.isFinite(mpNext)){
+        if(mpNext >= 10){
+          recBell = mpBell + 4;
+          recLadder = "345";
+        }else if(mpNext >= 6){
+          recBell = mpBell + 4;
+          recLadder = "123";
+        }else{
+          recBell = mpBell;
+          recLadder = "345";
+        }
+      }else{
+        recBell = mpBell;
+        recLadder = "345";
+      }
+    }else{
+      recBell = mpBell;
+      recLadder = "123";
+    }
+
+    recBell = Math.max(0, roundDown4(recBell));
+    mpRec = `${recBell} kg · ${MP_LADDER_LABEL[recLadder]}`;
+  } else if(mpBell!==null){
+    mpRec = `${roundDown4(mpBell)} kg (enter ND reps)`;
+  }
+
+  document.getElementById("snRec").textContent = snRec;
+  document.getElementById("mpRec").textContent = mpRec;
+}
+
+function applyTestsAndRestart(){
+  state.settings.snTestBell = document.getElementById("snTestBell").value.trim();
+  state.settings.snTestL = document.getElementById("snTestL").value.trim();
+  state.settings.snTestR = document.getElementById("snTestR").value.trim();
+  state.settings.snTestQuality = document.getElementById("snTestQuality").checked;
+
+  state.settings.mpTestBell = document.getElementById("mpTestBell").value.trim();
+  state.settings.mpTestND = document.getElementById("mpTestND").value.trim();
+  state.settings.mpTestNext = document.getElementById("mpTestNext").value.trim();
+
+  const snBell = num(state.settings.snTestBell);
+  const snL = parseInt(state.settings.snTestL,10);
+  const snR = parseInt(state.settings.snTestR,10);
+  const quality = !!state.settings.snTestQuality;
+
+  let newSn = null;
+  if(snBell!==null && Number.isFinite(snL) && Number.isFinite(snR)){
+    const mn = Math.min(snL, snR);
+    const mx = Math.max(snL, snR);
+    let rec = snBell;
+    if(!quality) rec = snBell - 4;
+    else if(mn < 20) rec = snBell - 4;
+    else if(mx > 25 && mn >= 20) rec = snBell + 4;
+    newSn = Math.max(0, roundDown4(rec));
+  }
+
+  const mpBell = num(state.settings.mpTestBell);
+  const mpND = parseInt(state.settings.mpTestND,10);
+  const mpNext = parseInt(state.settings.mpTestNext,10);
+
+  let newMp = null;
+  let newLadder = null;
+  if(mpBell!==null && Number.isFinite(mpND)){
+    let recBell = mpBell;
+    let recLadder = "123";
+    if(mpND < 6){
+      recBell = mpBell - 4;
+      recLadder = "123";
+    }else if(mpND >= 10){
+      if(Number.isFinite(mpNext)){
+        if(mpNext >= 10){
+          recBell = mpBell + 4;
+          recLadder = "345";
+        }else if(mpNext >= 6){
+          recBell = mpBell + 4;
+          recLadder = "123";
+        }else{
+          recBell = mpBell;
+          recLadder = "345";
+        }
+      }else{
+        recBell = mpBell;
+        recLadder = "345";
+      }
+    }else{
+      recBell = mpBell;
+      recLadder = "123";
+    }
+    newMp = Math.max(0, roundDown4(recBell));
+    newLadder = recLadder;
+  }
+
+  if(newSn!==null) state.settings.snBell = String(newSn);
+  if(newMp!==null) state.settings.mpBell = String(newMp);
+  if(newLadder!==null) state.mp.ladder = newLadder;
+
+  // Restart program from this calibrated start
+  state.sessionIndex = 0;
+  state.dayNumber = 1;
+  state.pressAlt = "A";
+
+  state.sn = { bracket:1, cycleIndex:0, highSuccess:0, cadence75Done:0 };
+  state.mp.lastRoll = null;
+  state.mp.forceNext3 = false;
+  state.mp.heavyLog = [];
+  state.mp.roll6Count = 0;
+
+  save();
+  render();
+  renderSettings();
+
+  const msg = [];
+  if(newSn===null) msg.push("SN test incomplete → SN bell not changed.");
+  else msg.push(`SN bell set to ${newSn} kg.`);
+  if(newMp===null) msg.push("MP test incomplete → MP bell/ladder not changed.");
+  else msg.push(`MP bell set to ${newMp} kg, start ladder ${MP_LADDER_LABEL[newLadder]}.`);
+  document.getElementById("testMsg").textContent = msg.join(" ");
+}
 function resetAll(){
   if(!confirm("Reset ALL saved data on this device?")) return;
   localStorage.removeItem(KEY);
@@ -1004,6 +1249,16 @@ document.getElementById("btnBottomStart").addEventListener("click", startTimer);
 document.getElementById("btnComplete").addEventListener("click", completeAndNext);
 
 document.getElementById("btnSave").addEventListener("click", saveSettings);
+document.getElementById("btnApplyTests").addEventListener("click", applyTestsAndRestart);
+
+// Live recommendation updates (UI only)
+["snTestBell","snTestL","snTestR","snTestQuality","mpTestBell","mpTestND","mpTestNext"].forEach(id=>{
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.addEventListener("input", updateTestRecommendations);
+  el.addEventListener("change", updateTestRecommendations);
+});
+
 document.getElementById("btnResetAll").addEventListener("click", resetAll);
 
 /* ---- Init ---- */
