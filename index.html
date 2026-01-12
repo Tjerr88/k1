@@ -1,0 +1,1150 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>Hardstyle Method — Auto Planner (Mobile + Timers)</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --card:#111827;
+      --card2:#0f172a;
+      --text:#e5e7eb;
+      --muted:#9ca3af;
+      --line:rgba(255,255,255,.10);
+      --accent:#22c55e;
+      --accent2:#60a5fa;
+      --warn:#f59e0b;
+      --danger:#ef4444;
+      --shadow:0 14px 40px rgba(0,0,0,.35);
+      --r:18px;
+      --r2:22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background:
+        radial-gradient(900px 600px at 20% -10%, rgba(34,197,94,.18), transparent 60%),
+        radial-gradient(900px 600px at 120% 10%, rgba(96,165,250,.16), transparent 55%),
+        var(--bg);
+      color:var(--text);
+      line-height:1.45;
+      -webkit-tap-highlight-color: transparent;
+      padding-bottom: 92px; /* for sticky bar */
+    }
+    .wrap{max-width:980px;margin:0 auto;padding:14px 12px 22px}
+    .top{
+      position:sticky;top:0;z-index:40;
+      background: linear-gradient(to bottom, rgba(11,15,20,.92), rgba(11,15,20,.65));
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--line);
+    }
+    .top-inner{max-width:980px;margin:0 auto;padding:12px 12px;display:flex;gap:10px;align-items:center;justify-content:space-between}
+    .brand{display:flex;gap:10px;align-items:center;min-width:0}
+    .logo{width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg, rgba(34,197,94,.95), rgba(96,165,250,.9));box-shadow:var(--shadow);flex:0 0 auto}
+    .brand h1{margin:0;font-size:14px;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .brand p{margin:0;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .actions{display:flex;gap:8px;align-items:center}
+    .btn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color:var(--text);
+      padding:12px 12px;
+      border-radius: 14px;
+      font-weight:850;
+      font-size:13px;
+      cursor:pointer;
+      transition:.15s transform, .15s background, .15s border;
+      user-select:none;
+      display:inline-flex;gap:8px;align-items:center;
+      min-height: 44px;
+    }
+    .btn:hover{background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.14)}
+    .btn:active{transform: translateY(1px)}
+    .btn.primary{border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.14)}
+    .btn.primary:hover{background: rgba(34,197,94,.18)}
+    .btn.blue{border-color: rgba(96,165,250,.35); background: rgba(96,165,250,.12)}
+    .btn.blue:hover{background: rgba(96,165,250,.16)}
+    .btn.warn{border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.12)}
+    .btn.warn:hover{background: rgba(245,158,11,.16)}
+    .btn.danger{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10)}
+    .btn.danger:hover{background: rgba(239,68,68,.14)}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color:var(--muted);
+      font-size:12px;font-weight:900;
+      white-space:nowrap;
+    }
+    .pill strong{color:var(--text)}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px}
+    .card{
+      background: linear-gradient(180deg, rgba(17,24,39,.95), rgba(15,23,42,.9));
+      border:1px solid var(--line);
+      border-radius: var(--r2);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .hd{padding:14px 14px 10px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+    .hd h2{margin:0;font-size:14px;letter-spacing:.2px}
+    .hd .sub{margin-top:4px;color:var(--muted);font-size:12px}
+    .bd{padding:14px}
+    .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+    .hr{height:1px;background: var(--line);margin:12px 0}
+    .mini{font-size:12px;color:var(--muted)}
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      font-size:12px;font-weight:900;
+    }
+    .badge.good{border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.10)}
+    .badge.blue{border-color: rgba(96,165,250,.35); background: rgba(96,165,250,.10)}
+    .badge.warn{border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.10)}
+    .badge.danger{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10)}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{
+      flex:0 0 auto;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      border-radius: 14px;
+      padding:12px 12px;
+      font-weight:950;
+      font-size:13px;
+      color:var(--muted);
+      cursor:pointer;
+      user-select:none;
+      min-height:44px;
+    }
+    .tab.active{
+      color:var(--text);
+      background: rgba(255,255,255,.06);
+      border-color: rgba(255,255,255,.14);
+    }
+    .field{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      border-radius: 16px;
+      padding:10px 12px;
+    }
+    .field label{display:block;font-size:12px;color:var(--muted);font-weight:950;margin-bottom:6px}
+    .field input,.field select{
+      width:100%;
+      border:0;outline:0;background:transparent;
+      color:var(--text);font-size:14px;font-weight:900;
+      min-height: 30px;
+    }
+    .two{display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:760px){.two{grid-template-columns:1fr 1fr}}
+    .callout{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.02);
+      border-radius: 18px;
+      padding:12px 12px;
+    }
+    .callout strong{color:#f3f4f6}
+    ul{margin:8px 0 8px 18px}
+    li{margin:6px 0}
+    .exercise{
+      display:flex;justify-content:space-between;gap:10px;align-items:flex-start;
+      padding:10px 0;border-bottom:1px solid var(--line);
+    }
+    .exercise:last-child{border-bottom:0}
+    .exercise .name{font-weight:950}
+    .exercise .note{color:var(--muted);font-size:12px;font-weight:800;margin-top:2px}
+    .exercise .right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:140px}
+    .toggle{
+      display:flex;gap:10px;align-items:center;
+      padding:10px 12px;border-radius:16px;border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+    }
+    .toggle input{transform: scale(1.15)}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;}
+    .bigtime{font-size:28px;font-weight:1000;letter-spacing:.3px}
+    .progress{
+      height:10px;border-radius:999px;border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      overflow:hidden;
+    }
+    .progress > div{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(34,197,94,.9), rgba(96,165,250,.85));
+    }
+
+    /* Sticky bottom bar */
+    .bottomBar{
+      position:fixed;
+      left:0;right:0;bottom:0;
+      border-top:1px solid var(--line);
+      background: rgba(11,15,20,.88);
+      backdrop-filter: blur(10px);
+      z-index:60;
+    }
+    .bottomInner{
+      max-width:980px;margin:0 auto;
+      padding:10px 12px;
+      display:flex;gap:10px;align-items:center;justify-content:space-between;
+    }
+    .bottomLeft{display:flex;gap:10px;align-items:center;min-width:0}
+    .bottomRight{display:flex;gap:8px;align-items:center}
+    .bottomTitle{
+      font-weight:950;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 48vw;
+    }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="top-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div style="min-width:0">
+          <h1>Hardstyle Method — Auto Planner</h1>
+          <p>Mobiel + timers · Complete → Next (regels automatisch)</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn blue" id="btnUndo" title="Undo last completion (one step)">Undo</button>
+        <button class="btn warn" id="btnHardReset" title="Reset everything">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs">
+      <div class="tab active" data-tab="training">Training</div>
+      <div class="tab" data-tab="settings">Settings</div>
+      <div class="tab" data-tab="status">Status</div>
+    </div>
+
+    <!-- TRAINING -->
+    <section class="grid" id="tab-training">
+      <div class="card">
+        <div class="hd">
+          <div>
+            <h2 id="dayTitle">Day</h2>
+            <div class="sub" id="daySub">—</div>
+          </div>
+          <span class="pill" id="dayPill"><strong>Practice</strong> —</span>
+        </div>
+        <div class="bd">
+          <div class="row">
+            <span class="badge blue" id="freqBadge">—</span>
+            <span class="badge good" id="snBadge">SN —</span>
+            <span class="badge good" id="mpBadge">MP —</span>
+          </div>
+
+          <div class="hr"></div>
+
+          <!-- TIMER CARD -->
+          <div class="card" style="border-radius:18px; box-shadow:none;">
+            <div class="hd" style="padding:12px 12px 10px;">
+              <div>
+                <h2>Timer</h2>
+                <div class="sub" id="timerLabel">—</div>
+              </div>
+              <span class="pill" id="timerPill"><strong>Idle</strong></span>
+            </div>
+            <div class="bd" style="padding:12px;">
+              <div class="row" style="justify-content:space-between;align-items:flex-end">
+                <div>
+                  <div class="bigtime mono" id="timerTime">00:00</div>
+                  <div class="mini" id="timerSub">—</div>
+                </div>
+                <div class="row">
+                  <button class="btn primary" id="btnTimerStart">Start</button>
+                  <button class="btn" id="btnTimerPause">Pause</button>
+                  <button class="btn" id="btnTimerReset">Reset</button>
+                </div>
+              </div>
+
+              <div class="hr"></div>
+
+              <div class="row" style="justify-content:space-between">
+                <span class="badge blue">Interval: <span class="mono" id="timerInterval">—</span></span>
+                <span class="badge blue">Round: <span class="mono" id="timerRound">—</span></span>
+              </div>
+
+              <div class="hr"></div>
+
+              <div class="progress" aria-label="progress">
+                <div id="timerProgress"></div>
+              </div>
+
+              <div class="hr"></div>
+
+              <div class="toggle">
+                <input type="checkbox" id="timerSound" checked />
+                <div>
+                  <div style="font-weight:950">Beep on interval</div>
+                  <div class="mini">Werkt offline. Tip: volume van je telefoon aan.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div id="exerciseList"></div>
+
+          <div class="hr"></div>
+
+          <div class="two">
+            <div class="callout">
+              <strong>Completion</strong>
+              <p class="mini">
+                Default = “successful”. Markeer alleen een failure als de gewenste uitkomst niet gehaald werd
+                (power drop / techniek weg / etc).
+              </p>
+
+              <div class="toggle" style="margin-top:10px" id="snFailWrap">
+                <input type="checkbox" id="snFail" />
+                <div>
+                  <div style="font-weight:950">Snatch: practice NOT achieved</div>
+                  <div class="mini">Bij failure reset SN automatisch naar Low.</div>
+                </div>
+              </div>
+
+              <div class="toggle" style="margin-top:10px; display:none" id="snCadence10Wrap">
+                <input type="checkbox" id="snCadence10" />
+                <div>
+                  <div style="font-weight:950">Use 10 reps every 2:00 today</div>
+                  <div class="mini">Wordt pas “unlock” na 6× succesvolle 5/75 sessies.</div>
+                </div>
+              </div>
+
+              <div class="toggle" style="margin-top:10px" id="mpFailWrap">
+                <input type="checkbox" id="mpFail" />
+                <div>
+                  <div style="font-weight:950">Press: practice NOT achieved</div>
+                  <div class="mini">Bij failure telt deze roll niet mee voor progressie.</div>
+                </div>
+              </div>
+
+              <div class="toggle" style="margin-top:10px" id="mpRoll6OkWrap">
+                <input type="checkbox" id="mpRoll6Ok" />
+                <div>
+                  <div style="font-weight:950">If Roll 6: RPE ~6–7 (count it)</div>
+                  <div class="mini">Nodig om automatisch naar volgende ladder bracket te gaan.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="callout">
+              <strong>Next step</strong>
+              <p class="mini" id="nextHint">—</p>
+              <div class="hr"></div>
+              <div class="mini">
+                Alles wordt lokaal opgeslagen (localStorage). GitHub Pages ok.
+              </div>
+            </div>
+          </div>
+
+          <div class="footer mini" style="text-align:center;margin-top:12px;color:var(--muted)">
+            Built for 1-thumb mobile training · Timers + rules engine
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="grid" id="tab-settings" style="display:none">
+      <div class="card">
+        <div class="hd">
+          <div>
+            <h2>Settings</h2>
+            <div class="sub">2/3/4 days + Snatch & Press weights (zoals gevraagd).</div>
+          </div>
+          <span class="pill"><strong>Config</strong></span>
+        </div>
+        <div class="bd">
+          <div class="two">
+            <div class="field">
+              <label for="freq">Training frequency</label>
+              <select id="freq">
+                <option value="2">2 days/week</option>
+                <option value="3">3 days/week</option>
+                <option value="4" selected>4 days/week</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="snKg">Snatch kettlebell (kg)</label>
+              <input id="snKg" inputmode="decimal" placeholder="e.g. 24" />
+            </div>
+
+            <div class="field">
+              <label for="mpKg">Military Press practice bell (kg)</label>
+              <input id="mpKg" inputmode="decimal" placeholder="e.g. 24" />
+              <div class="mini">Roll 2 tests gebruiken +4 / -4 kg.</div>
+            </div>
+
+            <div class="field">
+              <label for="mp1rmKg">Optional: Press 1RM estimate (kg)</label>
+              <input id="mp1rmKg" inputmode="decimal" placeholder="e.g. 36 (optional)" />
+              <div class="mini">Roll 1 suggereert 90% (down to 4kg).</div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="callout">
+            <strong>Brackets (auto)</strong>
+            <p class="mini">
+              Snatch bracket gaat automatisch omhoog na 8 succesvolle High days (default; document: 6–8).
+              Press ladder bracket gaat automatisch omhoog na 4× “Roll 6 counted” (document: 4–6). Dit kun je bij completion aanvinken.
+            </p>
+          </div>
+
+          <div class="hr"></div>
+          <div class="row">
+            <button class="btn primary" id="btnSaveSettings">Save</button>
+            <span class="mini" id="saveMsg"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATUS -->
+    <section class="grid" id="tab-status" style="display:none">
+      <div class="card">
+        <div class="hd">
+          <div>
+            <h2>Status</h2>
+            <div class="sub">Alles wat de app bijhoudt: progressie + cadence counts + roll constraints.</div>
+          </div>
+          <span class="pill"><strong>State</strong></span>
+        </div>
+        <div class="bd" id="statusBox"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Sticky bottom bar (mobile-optimized) -->
+  <div class="bottomBar">
+    <div class="bottomInner">
+      <div class="bottomLeft">
+        <span class="pill"><strong id="bottomPractice">—</strong></span>
+        <div class="bottomTitle" id="bottomTitle">—</div>
+      </div>
+      <div class="bottomRight">
+        <button class="btn primary" id="btnBottomStart">Start Timer</button>
+        <button class="btn blue" id="btnComplete">Complete & Next</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* =========================================================
+   Hardstyle Method Auto Planner — Mobile + Timers
+========================================================= */
+
+const KEY = "hsm_auto_mobile_v1";
+
+const DEFAULT = {
+  settings: { freq: 4, snKg: "", mpKg: "", mp1rmKg: "" },
+  sessionIndex: 0,
+  history: [],
+  pressAlt: "A",
+  sn: {
+    bracket: 1,
+    cycleIndex: 0,          // ["low","med","low","high"]
+    highSuccess: 0,
+    targetHigh: 8,          // document: 6-8; we choose 8 as default automation
+    cadence: { mode:"75x5", done75:0, done120:0 }, // tracking
+  },
+  mp: {
+    ladder: "123",
+    lastRoll: null,
+    forceNext3: false,
+    windowStart: Date.now(),
+    heavyUsed: { r1:0, r2:0 },
+    roll6Count: 0,
+    roll6Target: 4
+  }
+};
+
+function structuredCloneSafe(x){ return JSON.parse(JSON.stringify(x)); }
+function deepMerge(base, add){
+  if(typeof base !== "object" || base===null) return add;
+  if(typeof add !== "object" || add===null) return base;
+  for(const k of Object.keys(add)){
+    if(k in base && typeof base[k]==="object" && base[k]!==null && typeof add[k]==="object" && add[k]!==null){
+      base[k] = deepMerge(base[k], add[k]);
+    }else base[k] = add[k];
+  }
+  return base;
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return structuredCloneSafe(DEFAULT);
+    return deepMerge(structuredCloneSafe(DEFAULT), JSON.parse(raw));
+  }catch{
+    return structuredCloneSafe(DEFAULT);
+  }
+}
+function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
+function num(x){
+  const v = parseFloat(String(x??"").replace(",", "."));
+  return v;
+}
+function roundDownTo4kg(x){ return isFinite(x) ? (Math.floor(x/4)*4) : null; }
+function days14ms(){ return 14*24*60*60*1000; }
+
+let state = load();
+
+// ---------- Tabs ----------
+const tabs = Array.from(document.querySelectorAll(".tab"));
+tabs.forEach(t => t.addEventListener("click", ()=>{
+  tabs.forEach(x => x.classList.remove("active"));
+  t.classList.add("active");
+  const name = t.dataset.tab;
+  document.getElementById("tab-training").style.display = (name==="training") ? "" : "none";
+  document.getElementById("tab-settings").style.display = (name==="settings") ? "" : "none";
+  document.getElementById("tab-status").style.display = (name==="status") ? "" : "none";
+  if(name==="status") renderStatus();
+}));
+
+// ---------- Practice sequencing ----------
+function getPracticeSequence(freq){
+  if(freq === 4) return ["P1","P2A","P1","P2B"];
+  if(freq === 3) return ["P1","P2","P1","P2","P1","P2"];
+  return ["P1","P2"];
+}
+function resolvePractice(token, tmpState=state){
+  if(token==="P1") return { type:"P1", label:"Practice 1 (Get Up + Snatch + Core)" };
+  if(token==="P2A") return { type:"P2A", label:"Practice 2A (Press + Pull-ups + DFS)" };
+  if(token==="P2B") return { type:"P2B", label:"Practice 2B (Press + Rows + 2HS)" };
+  if(token==="P2"){
+    const t = (tmpState.pressAlt==="A") ? "P2A" : "P2B";
+    return resolvePractice(t, tmpState);
+  }
+  return { type:"P1", label:"Practice 1 (Get Up + Snatch + Core)" };
+}
+function getTodayPractice(){
+  const freq = Number(state.settings.freq||4);
+  const seq = getPracticeSequence(freq);
+  const idx = state.sessionIndex % seq.length;
+  return resolvePractice(seq[idx]);
+}
+
+// ---------- Snatch engine ----------
+const SN_CYCLE = ["low","med","low","high"];
+const SN_TABLE = {
+  1:{low:{reps:60, sets:12}, med:{reps:80, sets:16}, high:{reps:100, sets:20}},
+  2:{low:{reps:80, sets:16}, med:{reps:100, sets:20}, high:{reps:120, sets:24}},
+  3:{low:{reps:100, sets:20}, med:{reps:130, sets:26}, high:{reps:160, sets:32}},
+  4:{low:{reps:120, sets:24}, med:{reps:160, sets:32}, high:{reps:200, sets:40}},
+};
+function currentSnDay(){ return SN_CYCLE[clamp(state.sn.cycleIndex,0,3)]; }
+function snPrescription(){
+  const bracket = clamp(Number(state.sn.bracket||1),1,4);
+  const day = currentSnDay();
+  const row = SN_TABLE[bracket][day];
+  return { bracket, day, reps: row.reps, sets5: row.sets, scheme5: `${row.sets} × 5` };
+}
+function snOnComplete({success, used10on2}){
+  if(!success){
+    state.sn.cycleIndex = 0; // reset to Low
+    return;
+  }
+  // cadence tracking (only if successful)
+  if(used10on2){
+    state.sn.cadence.mode = "120x10";
+    state.sn.cadence.done120 = (state.sn.cadence.done120||0) + 1;
+  }else{
+    state.sn.cadence.mode = "75x5";
+    state.sn.cadence.done75 = (state.sn.cadence.done75||0) + 1;
+  }
+
+  const day = currentSnDay();
+  state.sn.cycleIndex = (state.sn.cycleIndex + 1) % SN_CYCLE.length;
+
+  if(day === "high"){
+    state.sn.highSuccess = (state.sn.highSuccess||0) + 1;
+    if(state.sn.highSuccess >= (state.sn.targetHigh||8)){
+      if(state.sn.bracket < 4) state.sn.bracket += 1;
+      state.sn.highSuccess = 0;
+      state.sn.cycleIndex = 0; // restart at Low
+    }
+  }
+}
+
+// ---------- Military Press engine ----------
+const MP_LADDERS = {
+  "123": { pattern:[1,2,3], label:"Ladders 1-2-3 (RM 6–10)" },
+  "234": { pattern:[2,3,4], label:"Ladders 2-3-4 (RM 6–10)" },
+  "345": { pattern:[3,4,5], label:"Ladders 3-4-5 (RM 10+)" },
+  "456": { pattern:[4,5,6], label:"Ladders 4-5-6 (RM 10+)" },
+};
+const MP_TABLE = {
+  "123": {1:{k:"h1"},2:{k:"h2"},3:{k:"l",reps:30,ladders:5},4:{k:"l",reps:36,ladders:6},5:{k:"l",reps:42,ladders:7},6:{k:"l",reps:48,ladders:8}},
+  "234": {1:{k:"h1"},2:{k:"h2"},3:{k:"l",reps:36,ladders:4},4:{k:"l",reps:45,ladders:5},5:{k:"l",reps:54,ladders:6},6:{k:"l",reps:63,ladders:7}},
+  "345": {1:{k:"h1"},2:{k:"h2"},3:{k:"l",reps:36,ladders:3},4:{k:"l",reps:48,ladders:4},5:{k:"l",reps:60,ladders:5},6:{k:"l",reps:72,ladders:6}},
+  "456": {1:{k:"h1"},2:{k:"h2"},3:{k:"l",reps:30,ladders:2},4:{k:"l",reps:45,ladders:3},5:{k:"l",reps:60,ladders:4},6:{k:"l",reps:75,ladders:5}},
+};
+function reset14DayWindowIfNeeded(){
+  const now = Date.now();
+  if(!state.mp.windowStart) state.mp.windowStart = now;
+  if(now - state.mp.windowStart > days14ms()){
+    state.mp.windowStart = now;
+    state.mp.heavyUsed = {r1:0, r2:0};
+    state.mp.forceNext3 = false;
+  }
+}
+function mpAllowedRoll(r){
+  reset14DayWindowIfNeeded();
+  if(state.mp.lastRoll === r) return false; // no same twice
+  if(r===1 && (state.mp.heavyUsed?.r1||0) >= 1) return false;
+  if(r===2 && (state.mp.heavyUsed?.r2||0) >= 1) return false;
+  return true;
+}
+function mpChooseRoll(){
+  reset14DayWindowIfNeeded();
+  if(state.mp.forceNext3){
+    state.mp.forceNext3 = false;
+    return 3;
+  }
+  const candidates = [1,2,3,4,5,6].filter(mpAllowedRoll);
+  if(candidates.length) return candidates[Math.floor(Math.random()*candidates.length)];
+  const fb = [1,2,3,4,5,6].filter(r => r !== state.mp.lastRoll);
+  return fb[Math.floor(Math.random()*fb.length)];
+}
+function mpPrescription(){
+  const ladder = (state.mp.ladder in MP_TABLE) ? state.mp.ladder : "123";
+  const roll = mpChooseRoll();
+  const def = MP_TABLE[ladder][roll];
+  return { ladder, roll, def, ladderMeta: MP_LADDERS[ladder] };
+}
+function mpOnComplete({success, roll, countedRoll6}){
+  reset14DayWindowIfNeeded();
+  state.mp.lastRoll = roll;
+
+  if(roll===1){ state.mp.heavyUsed.r1 = (state.mp.heavyUsed.r1||0)+1; state.mp.forceNext3 = true; }
+  if(roll===2){ state.mp.heavyUsed.r2 = (state.mp.heavyUsed.r2||0)+1; state.mp.forceNext3 = true; }
+
+  if(!success) return;
+
+  if(roll===6 && countedRoll6){
+    state.mp.roll6Count = (state.mp.roll6Count||0) + 1;
+    if(state.mp.roll6Count >= (state.mp.roll6Target||4)){
+      const order = ["123","234","345","456"];
+      const ix = Math.max(0, order.indexOf(state.mp.ladder));
+      if(ix < order.length-1) state.mp.ladder = order[ix+1];
+      state.mp.roll6Count = 0;
+    }
+  }
+}
+
+// ---------- Session build ----------
+function buildSession(){
+  const practice = getTodayPractice();
+  if(practice.type==="P1") return { practice, sn: snPrescription(), mp:null };
+  return { practice, sn:null, mp: mpPrescription() };
+}
+let currentSession = buildSession();
+
+// ---------- Timer engine ----------
+let timer = {
+  running:false,
+  startMs:0,
+  elapsedMs:0,
+  totalRounds:0,
+  roundIndex:0,
+  intervalSec:0,
+  totalSec:0,
+  label:"",
+  lastBeepRound:-1
+};
+let tickHandle = null;
+
+function formatMMSS(sec){
+  sec = Math.max(0, Math.floor(sec));
+  const m = String(Math.floor(sec/60)).padStart(2,"0");
+  const s = String(sec%60).padStart(2,"0");
+  return `${m}:${s}`;
+}
+
+// simple beep (offline)
+let audioCtx = null;
+function beep(){
+  if(!document.getElementById("timerSound").checked) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "sine";
+    o.frequency.value = 880;
+    g.gain.value = 0.12;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start();
+    o.stop(audioCtx.currentTime + 0.08);
+  }catch{}
+}
+
+function setTimerPresetForCurrentSession(){
+  // Determine primary timer for practice:
+  // P1: Snatch cadence timer (main), but we also show Get Up OTM 20' as embedded instruction.
+  // P2B: 2HS OT2M 20' timer (main)
+  // P2A: no strict timer; we set a simple "Press block" idle timer (manual)
+  const p = currentSession.practice.type;
+  const timerLabel = document.getElementById("timerLabel");
+
+  if(p==="P1"){
+    const sn = currentSession.sn;
+    const bracket = sn.bracket;
+    const day = sn.day;
+    const reps = sn.reps;
+    const allow10 = (state.sn.cadence.done75||0) >= 6;
+    const use10 = allow10 && document.getElementById("snCadence10")?.checked;
+
+    // default: 5 every 75s -> sets = reps/5
+    let intervalSec = 75;
+    let sets = reps / 5;
+    let label = `Snatch — Bracket ${bracket} ${day.toUpperCase()} · 5 reps / 75s`;
+    if(use10){
+      intervalSec = 120;
+      sets = reps / 10;
+      label = `Snatch — Bracket ${bracket} ${day.toUpperCase()} · 10 reps / 2:00`;
+    }
+    sets = Math.round(sets);
+    initTimer({label, intervalSec, rounds: sets});
+    timerLabel.textContent = label;
+    return;
+  }
+
+  if(p==="P2B"){
+    initTimer({label:"Two-Hand Swing — 10×10 OT2M (20')", intervalSec:120, rounds:10});
+    timerLabel.textContent = "Two-Hand Swing — 10×10 OT2M (20')";
+    return;
+  }
+
+  // P2A: no timed density in the document; we set a simple optional 1-minute tick timer OFF by default
+  initTimer({label:"Optional timer (manual) — no fixed intervals", intervalSec:60, rounds:0});
+  timerLabel.textContent = "Optional timer (manual) — no fixed intervals";
+}
+
+function initTimer({label, intervalSec, rounds}){
+  stopTimer();
+  timer.running = false;
+  timer.startMs = 0;
+  timer.elapsedMs = 0;
+  timer.intervalSec = Math.max(1, intervalSec|0);
+  timer.totalRounds = Math.max(0, rounds|0);
+  timer.roundIndex = 0;
+  timer.totalSec = (timer.totalRounds>0) ? timer.totalRounds * timer.intervalSec : 0;
+  timer.label = label;
+  timer.lastBeepRound = -1;
+  renderTimerUI();
+}
+
+function startTimer(){
+  if(timer.running) return;
+  // resume
+  timer.running = true;
+  timer.startMs = Date.now() - timer.elapsedMs;
+  document.getElementById("timerPill").innerHTML = "<strong>Running</strong>";
+  tickHandle = tickHandle || setInterval(tick, 200);
+  // unlock audio on iOS
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === "suspended") audioCtx.resume();
+  }catch{}
+}
+
+function pauseTimer(){
+  if(!timer.running) return;
+  timer.running = false;
+  timer.elapsedMs = Date.now() - timer.startMs;
+  document.getElementById("timerPill").innerHTML = "<strong>Paused</strong>";
+}
+
+function stopTimer(){
+  if(tickHandle){ clearInterval(tickHandle); tickHandle = null; }
+  timer.running = false;
+}
+
+function resetTimer(){
+  timer.running = false;
+  timer.startMs = 0;
+  timer.elapsedMs = 0;
+  timer.roundIndex = 0;
+  timer.lastBeepRound = -1;
+  document.getElementById("timerPill").innerHTML = "<strong>Idle</strong>";
+  renderTimerUI();
+}
+
+function tick(){
+  if(!timer.running) return;
+  timer.elapsedMs = Date.now() - timer.startMs;
+
+  // compute round index (beep at each new interval)
+  if(timer.totalRounds > 0){
+    const elapsedSec = timer.elapsedMs/1000;
+    const currentRound = Math.min(timer.totalRounds, Math.floor(elapsedSec / timer.intervalSec) + 1);
+    timer.roundIndex = currentRound;
+
+    if(currentRound !== timer.lastBeepRound){
+      // beep at round start (except round 1 immediate? We beep on round boundaries, including first start)
+      // We'll beep when round increments and elapsedSec > 0.2 or if it's round 1 and start pressed.
+      if(elapsedSec < 0.35 && currentRound === 1){
+        // small beep at start
+        beep();
+      }else if(elapsedSec >= 0.35){
+        beep();
+      }
+      timer.lastBeepRound = currentRound;
+    }
+
+    // auto stop when done
+    if(elapsedSec >= timer.totalRounds * timer.intervalSec){
+      timer.running = false;
+      document.getElementById("timerPill").innerHTML = "<strong>Done</strong>";
+      beep(); beep();
+    }
+  }
+  renderTimerUI();
+}
+
+function renderTimerUI(){
+  const t = document.getElementById("timerTime");
+  const sub = document.getElementById("timerSub");
+  const it = document.getElementById("timerInterval");
+  const rd = document.getElementById("timerRound");
+  const bar = document.getElementById("timerProgress");
+
+  if(timer.totalRounds === 0){
+    // manual stopwatch
+    const sec = (timer.elapsedMs/1000);
+    t.textContent = formatMMSS(sec);
+    sub.textContent = "No fixed rounds · use as stopwatch";
+    it.textContent = "—";
+    rd.textContent = "—";
+    bar.style.width = "0%";
+    return;
+  }
+
+  const elapsedSec = timer.elapsedMs/1000;
+  const totalSec = timer.totalRounds * timer.intervalSec;
+  const remaining = Math.max(0, totalSec - elapsedSec);
+
+  t.textContent = formatMMSS(remaining);
+  it.textContent = `${timer.intervalSec}s`;
+  rd.textContent = `${timer.roundIndex}/${timer.totalRounds}`;
+
+  // countdown to next beep within the current interval
+  const inRound = elapsedSec % timer.intervalSec;
+  const toNext = Math.max(0, timer.intervalSec - inRound);
+  sub.textContent = `Next beep in ~${Math.ceil(toNext)}s`;
+
+  const pct = Math.min(100, Math.max(0, (elapsedSec/totalSec)*100));
+  bar.style.width = pct.toFixed(1) + "%";
+}
+
+// ---------- UI helpers ----------
+function setText(id, txt){ document.getElementById(id).textContent = txt; }
+function setHTML(id, html){ document.getElementById(id).innerHTML = html; }
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+function freqLabel(freq){
+  if(freq===2) return "2 days/week (P1 → P2)";
+  if(freq===3) return "3 days/week (P1 ↔ P2, A/B alternates)";
+  return "4 days/week (P1 → 2A → P1 → 2B)";
+}
+function formatDayLabel(){ return `Day ${state.sessionIndex + 1}`; }
+
+// ---------- Render training ----------
+function render(){
+  const practice = currentSession.practice;
+  setText("dayTitle", formatDayLabel());
+  setText("daySub", practice.label);
+  setHTML("dayPill", `<strong>Practice</strong> ${practice.type}`);
+
+  setText("freqBadge", freqLabel(Number(state.settings.freq||4)));
+  setText("snBadge", `SN: ${state.settings.snKg ? state.settings.snKg+" kg" : "set weight"}`);
+  setText("mpBadge", `MP: ${state.settings.mpKg ? state.settings.mpKg+" kg" : "set weight"}`);
+
+  setText("bottomPractice", practice.type);
+  setText("bottomTitle", practice.label);
+
+  const list = document.getElementById("exerciseList");
+  list.innerHTML = "";
+
+  // toggle visibility / reset checkboxes
+  const isSn = practice.type === "P1";
+  document.getElementById("snFailWrap").style.display = isSn ? "" : "none";
+  document.getElementById("snFail").checked = false;
+
+  document.getElementById("mpFailWrap").style.display = isSn ? "none" : "";
+  document.getElementById("mpFail").checked = false;
+
+  document.getElementById("mpRoll6OkWrap").style.display = isSn ? "none" : "";
+  document.getElementById("mpRoll6Ok").checked = false;
+
+  // cadence unlock
+  const allow10 = (state.sn.cadence.done75||0) >= 6;
+  const cadenceWrap = document.getElementById("snCadence10Wrap");
+  const cadenceChk = document.getElementById("snCadence10");
+  if(isSn && allow10){
+    cadenceWrap.style.display = "";
+    cadenceChk.checked = (state.sn.cadence.mode === "120x10"); // default to last used
+  }else{
+    cadenceWrap.style.display = "none";
+    cadenceChk.checked = false;
+  }
+
+  if(isSn){
+    const sn = currentSession.sn;
+    const bracket = sn.bracket;
+    const day = sn.day;
+    const reps = sn.reps;
+    const sets5 = sn.sets5;
+
+    list.appendChild(exRow("Get Up", "10 × 1 (L/R) OTM (20')", "Timer available (beep every minute)."));
+    list.appendChild(exRow(
+      "Snatch",
+      `${day.toUpperCase()} — Bracket ${bracket}: ${reps} reps`,
+      `Default cadence: ${sets5} sets × 5 reps every ~75s. (Optional: 10 reps every 2:00 once unlocked.)`
+    ));
+    list.appendChild(exRow("Core Circuit", "Ab wheel + Side bend + Landmine rotation — 3×8 each", "Rest as necessary."));
+
+    // next hint
+    const next = previewNextPracticeLabel();
+    setText("nextHint", `Next will be: ${next}`);
+  }else{
+    const mp = currentSession.mp;
+    const ladder = mp.ladder;
+    const roll = mp.roll;
+    const def = mp.def;
+    const ladd = mp.ladderMeta;
+
+    const mpKg = num(state.settings.mpKg);
+    const up = isFinite(mpKg) ? mpKg + 4 : null;
+    const down = isFinite(mpKg) ? mpKg - 4 : null;
+
+    let right = "";
+    let note = "";
+    if(def.k === "l"){
+      right = `Roll ${roll}: ${def.reps} reps/arm · ${def.ladders} ladders/arm · ladder ${ladd.pattern.join("-")}`;
+      note = `Do ${def.ladders} ladders per arm.`;
+    }else if(def.k === "h1"){
+      const oneRM = num(state.settings.mp1rmKg);
+      const sug = isFinite(oneRM) ? roundDownTo4kg(oneRM * 0.90) : null;
+      right = `Roll 1 (Heavy): 6–10 × 1 @ ~90% 1RM (max 10)`;
+      note = sug ? `Suggested 90% bell (down to 4kg): ${sug} kg.` : `Optional: fill in 1RM in Settings for auto 90% bell.`;
+    }else{
+      right = `Roll 2 (Heavy): Max rep tests (up / main / down)`;
+      const mainTxt = isFinite(mpKg) ? `${mpKg} kg` : "main bell";
+      const upTxt = (up!==null) ? `${up} kg` : "+4 kg";
+      const downTxt = (down!==null) ? `${down} kg` : "-4 kg";
+      note = `Warm-up 1-2-3 on main. Test: ${upTxt} max → rest 5–8m → ${mainTxt} max → rest 5–8m → ${downTxt} max.`;
+    }
+
+    list.appendChild(exRow(`Single Military Press — ${ladd.label}`, right, note));
+
+    if(practice.type === "P2A"){
+      list.appendChild(exRow("Pull-ups", "5×8", "RPE ~6–7/10."));
+      list.appendChild(exRow("Double Front Squat", "3–5×5–8", "RPE ~6–7/10. ~3 min rest if needed."));
+    }else{
+      list.appendChild(exRow("Gorilla Rows", "5×8", "RPE ~6–7/10."));
+      list.appendChild(exRow("Two-Hand Swing", "10×10 OT2M (20')", "Timer available (beep every 2 minutes)."));
+    }
+
+    const next = previewNextPracticeLabel();
+    setText("nextHint", `Next will be: ${next}`);
+  }
+
+  // set timer preset now that cadence toggle is visible
+  setTimerPresetForCurrentSession();
+}
+
+function exRow(name, rightMain, note){
+  const d = document.createElement("div");
+  d.className = "exercise";
+  d.innerHTML = `
+    <div>
+      <div class="name">${escapeHtml(name)}</div>
+      ${note ? `<div class="note">${escapeHtml(note)}</div>` : ``}
+    </div>
+    <div class="right">
+      <span class="badge blue">${escapeHtml(rightMain)}</span>
+    </div>
+  `;
+  return d;
+}
+
+// ---------- Completion + Next ----------
+function snapshot(){ return structuredCloneSafe(state); }
+function pushHistory(){
+  state.history = state.history || [];
+  state.history.push(snapshot());
+  if(state.history.length > 30) state.history.shift();
+}
+function undo(){
+  if(!state.history || !state.history.length) return;
+  state = state.history.pop();
+  save();
+  currentSession = buildSession();
+  render();
+}
+
+function completeAndNext(){
+  pushHistory();
+
+  const practiceType = currentSession.practice.type;
+  if(practiceType==="P1"){
+    const fail = document.getElementById("snFail").checked;
+    const allow10 = (state.sn.cadence.done75||0) >= 6;
+    const used10on2 = allow10 && document.getElementById("snCadence10").checked;
+    snOnComplete({success: !fail, used10on2});
+  }else{
+    const fail = document.getElementById("mpFail").checked;
+    const countedRoll6 = document.getElementById("mpRoll6Ok").checked;
+    mpOnComplete({success: !fail, roll: currentSession.mp.roll, countedRoll6});
+    state.pressAlt = (state.pressAlt==="A") ? "B" : "A";
+  }
+
+  state.sessionIndex += 1;
+  save();
+
+  currentSession = buildSession();
+  render();
+}
+
+function previewNextPracticeLabel(){
+  const tmp = structuredCloneSafe(state);
+  // simulate a successful completion (without rolling a future MP roll)
+  const practice = getTodayPractice();
+  if(practice.type==="P1"){
+    const day = SN_CYCLE[clamp(tmp.sn.cycleIndex,0,3)];
+    tmp.sn.cycleIndex = (tmp.sn.cycleIndex + 1) % SN_CYCLE.length;
+    if(day==="high"){
+      tmp.sn.highSuccess = (tmp.sn.highSuccess||0)+1;
+      if(tmp.sn.highSuccess >= (tmp.sn.targetHigh||8)){
+        if(tmp.sn.bracket < 4) tmp.sn.bracket += 1;
+        tmp.sn.highSuccess = 0;
+        tmp.sn.cycleIndex = 0;
+      }
+    }
+  }else{
+    tmp.pressAlt = (tmp.pressAlt==="A") ? "B" : "A";
+  }
+  tmp.sessionIndex += 1;
+
+  const freq = Number(tmp.settings.freq||4);
+  const seq = getPracticeSequence(freq);
+  const token = seq[tmp.sessionIndex % seq.length];
+  const next = resolvePractice(token, tmp);
+  return next.label;
+}
+
+// ---------- Settings ----------
+function bindSettings(){
+  document.getElementById("freq").value = String(state.settings.freq||4);
+  document.getElementById("snKg").value = state.settings.snKg ?? "";
+  document.getElementById("mpKg").value = state.settings.mpKg ?? "";
+  document.getElementById("mp1rmKg").value = state.settings.mp1rmKg ?? "";
+}
+function saveSettings(){
+  state.settings.freq = Number(document.getElementById("freq").value);
+  state.settings.snKg = document.getElementById("snKg").value.trim();
+  state.settings.mpKg = document.getElementById("mpKg").value.trim();
+  state.settings.mp1rmKg = document.getElementById("mp1rmKg").value.trim();
+  save();
+  currentSession = buildSession();
+  render();
+  const msg = document.getElementById("saveMsg");
+  msg.textContent = "Saved.";
+  setTimeout(()=> msg.textContent = "", 1000);
+}
+
+// ---------- Status ----------
+function renderStatus(){
+  reset14DayWindowIfNeeded();
+  const sn = state.sn;
+  const mp = state.mp;
+  const day = SN_CYCLE[clamp(sn.cycleIndex,0,3)];
+  const pres = SN_TABLE[clamp(sn.bracket,1,4)][day];
+
+  const s = [];
+  s.push(`<div class="row" style="gap:8px;flex-wrap:wrap">
+    <span class="badge blue">Session: <span class="mono">${state.sessionIndex}</span></span>
+    <span class="badge blue">Freq: <span class="mono">${state.settings.freq}/week</span></span>
+  </div>`);
+
+  s.push(`<div class="hr"></div>`);
+
+  s.push(`<div class="callout">
+    <strong>Snatch</strong>
+    <ul class="mini">
+      <li>Bracket: <span class="mono">${sn.bracket}</span>/4</li>
+      <li>Next day: <span class="mono">${day.toUpperCase()}</span> → ${pres.reps} reps (${pres.sets}×5)</li>
+      <li>High successes: <span class="mono">${sn.highSuccess}</span>/<span class="mono">${sn.targetHigh}</span></li>
+      <li>Cadence 5/75 completed: <span class="mono">${sn.cadence.done75||0}</span></li>
+      <li>Cadence 10/2 completed: <span class="mono">${sn.cadence.done120||0}</span></li>
+      <li>10/2 unlock: <span class="mono">${(sn.cadence.done75||0) >= 6 ? "YES" : "no"}</span></li>
+    </ul>
+  </div>`);
+
+  const windowAge = Math.floor((Date.now()-mp.windowStart)/(24*60*60*1000));
+  s.push(`<div class="callout" style="margin-top:10px">
+    <strong>Military Press</strong>
+    <ul class="mini">
+      <li>Ladder bracket: <span class="mono">${mp.ladder}</span></li>
+      <li>Last roll: <span class="mono">${mp.lastRoll ?? "—"}</span></li>
+      <li>Forced next 3: <span class="mono">${mp.forceNext3 ? "YES" : "no"}</span></li>
+      <li>14-day window age: <span class="mono">${windowAge}</span> day(s)</li>
+      <li>Heavy used: r1=<span class="mono">${mp.heavyUsed?.r1||0}</span>, r2=<span class="mono">${mp.heavyUsed?.r2||0}</span></li>
+      <li>Roll-6 count: <span class="mono">${mp.roll6Count||0}</span>/<span class="mono">${mp.roll6Target}</span></li>
+    </ul>
+  </div>`);
+
+  document.getElementById("statusBox").innerHTML = s.join("");
+}
+
+// ---------- Reset ----------
+function hardReset(){
+  if(!confirm("Reset EVERYTHING? This wipes all saved progression on this device.")) return;
+  state = structuredCloneSafe(DEFAULT);
+  save();
+  bindSettings();
+  currentSession = buildSession();
+  render();
+}
+
+// ---------- Wire buttons ----------
+document.getElementById("btnComplete").addEventListener("click", completeAndNext);
+document.getElementById("btnBottomStart").addEventListener("click", startTimer);
+
+document.getElementById("btnTimerStart").addEventListener("click", startTimer);
+document.getElementById("btnTimerPause").addEventListener("click", pauseTimer);
+document.getElementById("btnTimerReset").addEventListener("click", resetTimer);
+
+document.getElementById("btnSaveSettings").addEventListener("click", saveSettings);
+document.getElementById("btnUndo").addEventListener("click", undo);
+document.getElementById("btnHardReset").addEventListener("click", hardReset);
+
+// cadence toggle should update timer preset live
+document.getElementById("snCadence10").addEventListener("change", ()=>{
+  if(currentSession.practice.type==="P1") setTimerPresetForCurrentSession();
+});
+
+// ---------- Init ----------
+bindSettings();
+currentSession = buildSession();
+render();
+save();
+</script>
+</body>
+</html>
