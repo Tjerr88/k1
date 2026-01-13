@@ -247,6 +247,44 @@ body{
 
         <div id="exerciseList"></div>
 
+        <div id="noticeWrap" class="toggle" style="display:none;margin-top:10px;border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.08)">
+  <div>
+    <div style="font-weight:950">Reminder</div>
+    <div class="small" id="noticeText">—</div>
+  </div>
+</div>
+
+        <div id="repCounterWrap" class="card" style="display:none;margin:10px 0 0; box-shadow:none; border-radius:16px;">
+          <div class="hd" style="padding:12px 12px 10px;">
+            <div>
+              <h2>Press rep counter</h2>
+              <div class="sub" id="repCounterSub">Track reps per arm (no fixed rest).</div>
+            </div>
+            <span class="pill"><strong id="repCounterTarget">—</strong></span>
+          </div>
+          <div class="bd" style="padding:12px;">
+            <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+              <div class="field">
+                <label>Left (non-dominant)</label>
+                <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
+                  <button class="btn" id="repLminus" style="width:auto;min-width:52px">-</button>
+                  <div class="timerTime mono" id="repL">0</div>
+                  <button class="btn primary" id="repLplus" style="width:auto;min-width:52px">+</button>
+                </div>
+              </div>
+              <div class="field">
+                <label>Right (dominant)</label>
+                <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
+                  <button class="btn" id="repRminus" style="width:auto;min-width:52px">-</button>
+                  <div class="timerTime mono" id="repR">0</div>
+                  <button class="btn primary" id="repRplus" style="width:auto;min-width:52px">+</button>
+                </div>
+              </div>
+            </div>
+            <div class="small" style="margin-top:8px" id="repCounterHint">—</div>
+          </div>
+        </div>
+
         <div class="hr"></div>
 
         <div class="grid">
@@ -316,7 +354,7 @@ body{
           <div class="field">
             <label for="mp1rm">Optional: MP 1RM estimate (kg)</label>
             <input id="mp1rm" inputmode="decimal" placeholder="e.g. 36 (optional)">
-            <div class="small">Roll 1: 90% advies (naar beneden op 4 kg).</div>
+            <div class="small">Roll 1: advies = volgende bell onder je 1RM (naar beneden op 4 kg).</div>
           </div>
         </div>
 
@@ -387,9 +425,81 @@ body{
           </div>
         </div>
 
+        
+        <div class="hr"></div>
+
+        <div class="card" style="margin:0; box-shadow:none; border-radius:16px;">
+          <div class="hd" style="padding:12px 12px 10px;">
+            <div>
+              <h2>Advanced rules</h2>
+              <div class="sub">Ranges uit de methode (kies conservatief als je herstel beperkt is).</div>
+            </div>
+            <span class="pill"><strong>Rules</strong></span>
+          </div>
+          <div class="bd" style="padding:12px;">
+            <div class="grid">
+              <div class="field">
+                <label for="snHighTarget">SN: successful HIGH days to progress bracket (6–8)</label>
+                <select id="snHighTarget">
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="snCadenceAfter">SN: switch to 10 reps / 2:00 after X successful 5/75 sessions (6–8)</label>
+                <select id="snCadenceAfter">
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="mpRoll6Target">MP: Roll-6 count to progress ladder bracket (4–6)</label>
+                <select id="mpRoll6Target">
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="hr"></div>
+
+            <div class="grid">
+              <div class="toggle">
+                <input type="checkbox" id="remindSnAfterB2" checked>
+                <div>
+                  <div style="font-weight:950">Reminder: Snatch re-test after Bracket 2</div>
+                  <div class="small">Nieuwe max-rep snatch test om je (volgende) bell te bepalen.</div>
+                </div>
+              </div>
+
+              <div class="toggle">
+                <input type="checkbox" id="remindSnAfterB4" checked>
+                <div>
+                  <div style="font-weight:950">Reminder: Snatch re-test after Bracket 4</div>
+                  <div class="small">Bracket 4 afgerond → test na 2–3 dagen rust.</div>
+                </div>
+              </div>
+
+              <div class="toggle">
+                <input type="checkbox" id="addLoadedCleans">
+                <div>
+                  <div style="font-weight:950">Add 5×3 loaded cleans after Press sessions</div>
+                  <div class="small">Alleen als pressing-specifiek doel. Default uit.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="hr"></div>
 
         <button class="btn primary" id="btnSave">Save</button>
+
 
         <div class="small" id="saveMsg" style="margin-top:8px"></div>
 
@@ -433,10 +543,12 @@ body{
 const KEY = "hsm_auto_engine_v2";
 
 /* ---- YOUR CHOSEN RULES ---- */
-const SN_TARGET_HIGH = 6;
-const MP_TARGET_ROLL6 = 6;
-const AUTO_CADENCE_AFTER = 6;
-
+// Configurable via Settings (Advanced rules)
+function getSnHighTarget(){ const v = Number(state.settings.snHighTarget||6); return (v===7||v===8)?v:6; }
+function getMpRoll6Target(){ const v = Number(state.settings.mpRoll6Target||6); return (v===4||v===5)?v:6; }
+function getSnCadenceAfter(){ const v = Number(state.settings.snCadenceAfter||6); return (v===7||v===8)?v:6; }
+function remindAfterB2(){ return (state.settings.remindSnAfterB2 ?? true) === true; }
+function remindAfterB4(){ return (state.settings.remindSnAfterB4 ?? true) === true; }
 /* ---- DATA ---- */
 const SN_CYCLE = ["low","med","low","high"];
 const SN_TABLE = {
@@ -479,12 +591,14 @@ function escapeHtml(s){
 
 /* ---- STATE ---- */
 const DEFAULT = {
-  settings:{freq:4, snBell:"24", mpBell:"24", mp1rm:"", snTestBell:"", snTestL:"", snTestR:"", snTestQuality:true, mpTestBell:"", mpTestND:"", mpTestNext:""},
+  settings:{freq:4, snBell:"24", mpBell:"24", mp1rm:"", snTestBell:"", snTestL:"", snTestR:"", snTestQuality:true, mpTestBell:"", mpTestND:"", mpTestNext:"", snHighTarget:"6", snCadenceAfter:"6", mpRoll6Target:"6", remindSnAfterB2:true, remindSnAfterB4:true, addLoadedCleans:false },
   sessionIndex:0,
   dayNumber:1,
   pressAlt:"A",
-  sn:{ bracket:1, cycleIndex:0, highSuccess:0, cadence75Done:0 },
-  mp:{ ladder:"123", lastRoll:null, forceNext3:false, heavyLog:[], roll6Count:0 }
+  sn:{ bracket:1, phase:"startup", cycleIndex:0, nextDay:"low", lmNext:"low", highSuccess:0, cadence75Done:0 },
+  mp:{ ladder:"123", lastRoll:null, forceNext3:false, heavyLog:[], roll6Count:0 },
+  ui:{ notice:null, noticeTs:0 },
+  repCounter:{ day:null, target:0, L:0, R:0 }
 };
 
 let state = load();
@@ -535,36 +649,115 @@ function currentPractice(){
 }
 
 /* ---- SNATCH ENGINE ---- */
-function snDay(){ return SN_CYCLE[clamp(state.sn.cycleIndex,0,3)]; }
+const SN_STARTUP_CYCLE = ["low","med","low","high"];
+
+function snDay(){
+  const phase = state.sn.phase || "startup";
+  if(phase==="startup"){
+    return SN_STARTUP_CYCLE[clamp(state.sn.cycleIndex,0,3)];
+  }
+  return (state.sn.nextDay || "high");
+}
+
 function snPrescription(){
   const bracket = clamp(Number(state.sn.bracket||1),1,4);
   const day = snDay();
   const row = SN_TABLE[bracket][day];
   return { bracket, day, reps: row.reps, sets: row.sets };
 }
+
+function setNotice(msg){
+  state.ui.notice = msg;
+  state.ui.noticeTs = now();
+}
+
+function snResetToLow(){
+  state.sn.phase = "ongoing";
+  state.sn.nextDay = "low";
+  state.sn.lmNext = "med";
+}
+
+function snStartNewBracket(){
+  state.sn.phase = "startup";
+  state.sn.cycleIndex = 0;
+  state.sn.nextDay = "low";
+  state.sn.lmNext = "low";
+}
+
+function snEnterOngoingAfterStartupHigh(){
+  state.sn.phase = "ongoing";
+  state.sn.nextDay = "high";
+  state.sn.lmNext = "low";
+}
+
 function snOnComplete(success){
   if(!success){
-    state.sn.cycleIndex = 0; // back to LOW
+    if((state.sn.phase||"startup")==="startup"){
+      state.sn.cycleIndex = 0;
+      state.sn.nextDay = "low";
+    }else{
+      snResetToLow();
+    }
     return;
   }
+
   if(currentTimerPreset === "SN_75"){
     state.sn.cadence75Done = (state.sn.cadence75Done||0) + 1;
   }
 
   const day = snDay();
-  state.sn.cycleIndex = (state.sn.cycleIndex + 1) % SN_CYCLE.length;
+
+  if((state.sn.phase||"startup")==="startup"){
+    state.sn.cycleIndex = clamp((state.sn.cycleIndex||0) + 1, 0, 3);
+
+    if(day==="high"){
+      snEnterOngoingAfterStartupHigh();
+      state.sn.highSuccess = (state.sn.highSuccess||0) + 1;
+    }else{
+      state.sn.nextDay = SN_STARTUP_CYCLE[clamp(state.sn.cycleIndex,0,3)];
+    }
+  }else{
+    if(day==="high"){
+      state.sn.highSuccess = (state.sn.highSuccess||0) + 1;
+      const lm = state.sn.lmNext || "low";
+      state.sn.nextDay = lm;
+      state.sn.lmNext = (lm==="low") ? "med" : "low";
+    }else{
+      state.sn.nextDay = "high";
+    }
+  }
 
   if(day==="high"){
-    state.sn.highSuccess = (state.sn.highSuccess||0) + 1;
-    if(state.sn.highSuccess >= SN_TARGET_HIGH){
-      if(state.sn.bracket < 4) state.sn.bracket += 1;
-      state.sn.highSuccess = 0;
-      state.sn.cycleIndex = 0;
+    const target = getSnHighTarget();
+    if((state.sn.highSuccess||0) >= target){
+      if(state.sn.bracket < 4){
+        const completed = state.sn.bracket;
+        state.sn.bracket += 1;
+        state.sn.highSuccess = 0;
+        snStartNewBracket();
+
+        if(completed === 2 && remindAfterB2()){
+          setNotice("Snatch: Bracket 2 completed → recommended: repeat max-rep snatch test to reassess your bell (20–25 explosive reps/arm).");
+        }else{
+          setNotice(`Snatch: Bracket ${completed} completed → start-up for Bracket ${state.sn.bracket}: LOW → MED → LOW → HIGH.`);
+        }
+      }else{
+        state.sn.highSuccess = 0;
+        state.sn.phase = "ongoing";
+        state.sn.nextDay = "high";
+        state.sn.lmNext = "low";
+
+        if(remindAfterB4()){
+          setNotice("Snatch: Bracket 4 completed → take 2–3 days easy, then perform a max-rep snatch test. If you can hit 20–25 explosive reps/arm on the next bell up, restart at Bracket 1.");
+        }else{
+          setNotice("Snatch: Bracket 4 completed → consider a max-rep snatch test to reassess bell selection.");
+        }
+      }
     }
   }
 }
 
-/* ---- PRESS DICE RULES ---- */
+/* ---- PRESS DICE RULES ---- *//* ---- PRESS DICE RULES ---- */
 function pruneHeavyLog(){
   const cutoff = now() - 14*24*60*60*1000;
   state.mp.heavyLog = (state.mp.heavyLog||[]).filter(x => x && x.ts >= cutoff);
@@ -616,10 +809,13 @@ function mpOnComplete(success, roll, countRoll6){
 
   if(roll===6 && countRoll6){
     state.mp.roll6Count = (state.mp.roll6Count||0) + 1;
-    if(state.mp.roll6Count >= MP_TARGET_ROLL6){
+    if(state.mp.roll6Count >= getMpRoll6Target()){
       const idx = MP_LADDERS.indexOf(state.mp.ladder);
       if(idx >=0 && idx < MP_LADDERS.length-1){
         state.mp.ladder = MP_LADDERS[idx+1];
+        setNotice(`Press: ladder progressed → ${MP_LADDER_LABEL[state.mp.ladder]}. Review Roll 1/2 outcomes over time; consider next bell only after completing all brackets.`);
+      }else{
+        setNotice("Press: top ladder (4-5-6) bracket completed. Review Roll-1 and Roll-2 outcomes; if heavy singles feel comfortable and max reps rise, consider testing the next bell size.");
       }
       state.mp.roll6Count = 0;
     }
@@ -787,6 +983,35 @@ function renderWake(){
 /* ---- UI BUILD ---- */
 let currentSession = null;
 
+function resetRepCounterIfNeeded(target){
+  if(state.repCounter.day !== state.dayNumber || state.repCounter.target !== target){
+    state.repCounter = { day: state.dayNumber, target: target, L: 0, R: 0 };
+  }
+}
+function clampRep(n, target){ return Math.max(0, Math.min(target, n)); }
+function renderRepCounter(){
+  const wrap = document.getElementById("repCounterWrap");
+  if(!wrap) return;
+  const p = currentSession.practice.type;
+  if(p==="P1"){ wrap.style.display="none"; return; }
+
+  const mp = currentSession.mp;
+  if(!mp || mp.def.k!=="l"){ wrap.style.display="none"; return; } // only ladder days
+
+  const target = mp.def.reps;
+  resetRepCounterIfNeeded(target);
+
+  wrap.style.display = "";
+  document.getElementById("repCounterTarget").textContent = `${target} / arm`;
+  document.getElementById("repCounterSub").textContent = `${MP_LADDER_LABEL[mp.ladder]} · Roll ${mp.roll} (no fixed rest)`;
+  document.getElementById("repL").textContent = String(state.repCounter.L);
+  document.getElementById("repR").textContent = String(state.repCounter.R);
+
+  const done = (state.repCounter.L >= target && state.repCounter.R >= target);
+  document.getElementById("repCounterHint").textContent = done ? "Done: you hit target reps on both arms." : "Tap + after each strict rep. Rest as needed to keep clean reps.";
+}
+
+
 function exRow(name, rightMain, note){
   const d = document.createElement("div");
   d.className="exercise";
@@ -844,7 +1069,7 @@ function setSnatchTimerPreset(){
   const reps = sn.reps;
   const sets = sn.sets;
 
-  const auto120 = (state.sn.cadence75Done||0) >= AUTO_CADENCE_AFTER;
+  const auto120 = (state.sn.cadence75Done||0) >= getSnCadenceAfter();
 
   if(auto120){
     setTimer({label:`Snatch — Bracket ${sn.bracket} ${sn.day.toUpperCase()} · 10 reps / 2:00`, intervalSec:120, rounds:Math.ceil(reps/10), preset:"SN_120"});
@@ -896,7 +1121,7 @@ function render(){
   if(p.type==="P1"){
     const sn = currentSession.sn;
     list.appendChild(exRow("Turkish Get Up", "10×1 OTM (20:00)", "1 rep per minute. Kies preset 'TGU OTM 20:00' als je wil."));
-    list.appendChild(exRow("Single Arm Snatch", `${sn.day.toUpperCase()} — Bracket ${sn.bracket}: ${sn.reps} reps`, `Sets: ${sn.sets}×5. Auto-switch naar 10/2 na ${AUTO_CADENCE_AFTER} succesvolle 5/75 sessies.`));
+    list.appendChild(exRow("Single Arm Snatch", `${sn.day.toUpperCase()} — Bracket ${sn.bracket}: ${sn.reps} reps`, `Sets: ${sn.sets}×5. Auto-switch naar 10/2 na ${getSnCadenceAfter()} succesvolle 5/75 sessies.`));
     list.appendChild(exRow("Core", "3×8 each", "Ab wheel + Side bend + Rotation (rest as needed)."));
   }else{
     const mp = currentSession.mp;
@@ -916,11 +1141,11 @@ function render(){
         `${def.ladders} × (${MP_LADDER_LABEL[ladder].replace('Ladders ','')}) per arm`
       ));
     }else if(def.k==="h1"){
-      const sug = (mp1rmN!==null) ? roundDown4(mp1rmN * 0.90) : null;
+      const sug = (mp1rmN!==null) ? roundDown4(mp1rmN - 0.01) : null;
       list.appendChild(exRow(
         "MP Heavy (Roll 1)",
-        "6–10 × 1 @ ~90% 1RM (max 10)",
-        sug!==null ? `Suggested bell: ${sug} kg (rounded down to 4 kg).` : "Vul 1RM in Settings voor bell-advies."
+        "6–10 × 1 (next bell below your 1RM, max 10)",
+        sug!==null ? `Suggested bell (next below 1RM): ${sug} kg (rounded down to 4 kg).` : "Vul 1RM in Settings voor bell-advies."
       ));
       list.appendChild(exRow("Rule", "Next MP session forced Roll 3", "Na heavy is volgende press automatisch roll 3."));
     }else{
@@ -935,6 +1160,10 @@ function render(){
       list.appendChild(exRow("Rule", "Next MP session forced Roll 3", "Na heavy is volgende press automatisch roll 3."));
     }
 
+    if(state.settings.addLoadedCleans){
+      list.appendChild(exRow("Loaded Cleans", "5×3", "Optional add-on for pressing specific goal."));
+    }
+
     if(p.type==="P2A"){
       list.appendChild(exRow("Pull-ups", "5×8", "RPE ~6–7/10"));
       list.appendChild(exRow("Double Front Squat", "3–5×5–8", "RPE ~6–7/10"));
@@ -944,7 +1173,20 @@ function render(){
     }
   }
 
+
+  // Reminder / notice
+  const nw = document.getElementById("noticeWrap");
+  if(state.ui && state.ui.notice){
+    nw.style.display = "";
+    document.getElementById("noticeText").textContent = state.ui.notice;
+  }else{
+    nw.style.display = "none";
+    document.getElementById("noticeText").textContent = "—";
+  }
+
   document.getElementById("nextHint").textContent = `Next: ${previewNext()}`;
+
+  renderRepCounter();
 
   setDefaultTimerPresets();
   renderWake();
@@ -982,6 +1224,9 @@ function completeAndNext(){
   state.sessionIndex += 1;
   state.dayNumber += 1;
 
+  // Clear reminder once you move on
+  state.ui.notice = null;
+
   save();
   render();
 }
@@ -1010,6 +1255,15 @@ function renderSettings(){
   document.getElementById("mp1rm").value = state.settings.mp1rm ?? "";
   document.getElementById("saveMsg").textContent = "";
 
+  // Advanced rules
+  document.getElementById("snHighTarget").value = String(state.settings.snHighTarget||6);
+  document.getElementById("snCadenceAfter").value = String(state.settings.snCadenceAfter||6);
+  document.getElementById("mpRoll6Target").value = String(state.settings.mpRoll6Target||6);
+  document.getElementById("remindSnAfterB2").checked = (state.settings.remindSnAfterB2 ?? true);
+  document.getElementById("remindSnAfterB4").checked = (state.settings.remindSnAfterB4 ?? true);
+  document.getElementById("addLoadedCleans").checked = (state.settings.addLoadedCleans ?? false);
+
+
   // Initial tests fields (stored in settings)
   document.getElementById("snTestBell").value = state.settings.snTestBell ?? "";
   document.getElementById("snTestL").value = state.settings.snTestL ?? "";
@@ -1030,6 +1284,15 @@ function saveSettings(){
   state.settings.snBell = document.getElementById("snBell").value.trim();
   state.settings.mpBell = document.getElementById("mpBell").value.trim();
   state.settings.mp1rm = document.getElementById("mp1rm").value.trim();
+
+  // Advanced rules
+  state.settings.snHighTarget = document.getElementById("snHighTarget").value;
+  state.settings.snCadenceAfter = document.getElementById("snCadenceAfter").value;
+  state.settings.mpRoll6Target = document.getElementById("mpRoll6Target").value;
+  state.settings.remindSnAfterB2 = document.getElementById("remindSnAfterB2").checked;
+  state.settings.remindSnAfterB4 = document.getElementById("remindSnAfterB4").checked;
+  state.settings.addLoadedCleans = document.getElementById("addLoadedCleans").checked;
+
   // Persist initial test fields (no automatic changes unless you press Apply)
   state.settings.snTestBell = document.getElementById("snTestBell").value.trim();
   state.settings.snTestL = document.getElementById("snTestL").value.trim();
@@ -1181,11 +1444,14 @@ function applyTestsAndRestart(){
   state.dayNumber = 1;
   state.pressAlt = "A";
 
-  state.sn = { bracket:1, cycleIndex:0, highSuccess:0, cadence75Done:0 };
+  state.sn = { bracket:1, phase:"startup", cycleIndex:0, nextDay:"low", lmNext:"low", highSuccess:0, cadence75Done:0 };
   state.mp.lastRoll = null;
   state.mp.forceNext3 = false;
   state.mp.heavyLog = [];
   state.mp.roll6Count = 0;
+
+  state.ui.notice = null; state.ui.noticeTs = 0;
+  state.repCounter = {day:null, target:0, L:0, R:0};
 
   save();
   render();
@@ -1223,8 +1489,8 @@ function renderStatus(){
   s.push(`<div class="toggle"><div>
     <div style="font-weight:950">Snatch</div>
     <div class="small">
-      Bracket: <span class="mono">${state.sn.bracket}</span>/4 · Next: <span class="mono">${sn.day.toUpperCase()}</span> (${sn.reps} reps / ${sn.sets}×5) · High-success: <span class="mono">${state.sn.highSuccess}</span>/${SN_TARGET_HIGH}
-      · 5/75 successful: <span class="mono">${state.sn.cadence75Done||0}</span> (auto 10/2 after ${AUTO_CADENCE_AFTER})
+      Bracket: <span class="mono">${state.sn.bracket}</span>/4 · Next: <span class="mono">${sn.day.toUpperCase()}</span> (${sn.reps} reps / ${sn.sets}×5) · High-success: <span class="mono">${state.sn.highSuccess}</span>/${getSnHighTarget()}
+      · 5/75 successful: <span class="mono">${state.sn.cadence75Done||0}</span> (auto 10/2 after ${getSnCadenceAfter()})
     </div>
   </div></div>`);
 
@@ -1233,7 +1499,7 @@ function renderStatus(){
     <div class="small">
       Ladder: <span class="mono">${state.mp.ladder}</span> · Last roll: <span class="mono">${state.mp.lastRoll ?? "—"}</span> · Forced next 3: <span class="mono">${state.mp.forceNext3 ? "YES" : "no"}</span>
       · Heavy last 14d: r1=<span class="mono">${heavyCount("r1")}</span>, r2=<span class="mono">${heavyCount("r2")}</span>
-      · Roll-6 count: <span class="mono">${state.mp.roll6Count||0}</span>/${MP_TARGET_ROLL6}
+      · Roll-6 count: <span class="mono">${state.mp.roll6Count||0}</span>/${getMpRoll6Target()}
     </div>
   </div></div>`);
 
@@ -1260,6 +1526,26 @@ document.getElementById("btnApplyTests").addEventListener("click", applyTestsAnd
 });
 
 document.getElementById("btnResetAll").addEventListener("click", resetAll);
+
+
+// Rep counter buttons (Press ladder days)
+["repLplus","repLminus","repRplus","repRminus"].forEach(id=>{
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.addEventListener("click", ()=>{
+    if(!currentSession || !currentSession.mp || currentSession.practice.type==="P1") return;
+    if(currentSession.mp.def.k!=="l") return;
+    const target = currentSession.mp.def.reps;
+    resetRepCounterIfNeeded(target);
+    if(id==="repLplus") state.repCounter.L = clampRep(state.repCounter.L + 1, target);
+    if(id==="repLminus") state.repCounter.L = clampRep(state.repCounter.L - 1, target);
+    if(id==="repRplus") state.repCounter.R = clampRep(state.repCounter.R + 1, target);
+    if(id==="repRminus") state.repCounter.R = clampRep(state.repCounter.R - 1, target);
+    save();
+    renderRepCounter();
+  });
+});
+
 
 /* ---- Init ---- */
 render();
