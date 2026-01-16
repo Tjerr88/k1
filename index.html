@@ -283,7 +283,19 @@ body{
             </div>
             <div class="small" style="margin-top:8px" id="repCounterHint">—</div>
           </div>
+        
+
+        <div id="setCounterWrap" class="card" style="display:none;margin:10px 0 0; box-shadow:none; border-radius:16px;">
+          <div class="hd" style="padding:12px 12px 10px;">
+            <div>
+              <h2>Set counters</h2>
+              <div class="sub" id="setCounterSub">Tap + after each completed set (simple check-off).</div>
+            </div>
+            <span class="pill"><strong id="setCounterPill">—</strong></span>
+          </div>
+          <div class="bd" style="padding:12px;" id="setCounterList"></div>
         </div>
+</div>
 
         <div class="hr"></div>
 
@@ -350,6 +362,13 @@ body{
             <input id="mpBell" inputmode="decimal" placeholder="e.g. 24">
             <div class="small">Roll 2 gebruikt +4 / -4 kg.</div>
           </div>
+
+          <div class="field">
+            <label for="mpRestSec">MP rest timer (seconds)</label>
+            <input id="mpRestSec" inputmode="numeric" placeholder="e.g. 180">
+            <div class="small">Handmatige rusttimer voor MP + accessoires (geen auto-start).</div>
+          </div>
+
 
           <div class="field">
             <label for="mp1rm">Optional: MP 1RM estimate (kg)</label>
@@ -547,6 +566,7 @@ const KEY = "hsm_auto_engine_v2";
 function getSnHighTarget(){ const v = Number(state.settings.snHighTarget||6); return (v===7||v===8)?v:6; }
 function getMpRoll6Target(){ const v = Number(state.settings.mpRoll6Target||6); return (v===4||v===5)?v:6; }
 function getSnCadenceAfter(){ const v = Number(state.settings.snCadenceAfter||6); return (v===7||v===8)?v:6; }
+function getMpRestSec(){ const v = Number(state.settings.mpRestSec||180); return Math.max(30, Math.min(600, Math.round(v))); }
 function remindAfterB2(){ return (state.settings.remindSnAfterB2 ?? true) === true; }
 function remindAfterB4(){ return (state.settings.remindSnAfterB4 ?? true) === true; }
 /* ---- DATA ---- */
@@ -591,14 +611,16 @@ function escapeHtml(s){
 
 /* ---- STATE ---- */
 const DEFAULT = {
-  settings:{freq:4, snBell:"24", mpBell:"24", mp1rm:"", snTestBell:"", snTestL:"", snTestR:"", snTestQuality:true, mpTestBell:"", mpTestND:"", mpTestNext:"", snHighTarget:"6", snCadenceAfter:"6", mpRoll6Target:"6", remindSnAfterB2:true, remindSnAfterB4:true, addLoadedCleans:false },
+  settings:{freq:4, snBell:"24", mpBell:"24", mp1rm:"", snTestBell:"", snTestL:"", snTestR:"", snTestQuality:true, mpTestBell:"", mpTestND:"", mpTestNext:"", snHighTarget:"6", snCadenceAfter:"6", mpRoll6Target:"6", remindSnAfterB2:true, remindSnAfterB4:true, mpRestSec:"180", addLoadedCleans:false },
   sessionIndex:0,
   dayNumber:1,
   pressAlt:"A",
   sn:{ bracket:1, phase:"startup", cycleIndex:0, nextDay:"low", lmNext:"low", highSuccess:0, cadence75Done:0 },
   mp:{ ladder:"123", lastRoll:null, forceNext3:false, heavyLog:[], roll6Count:0 },
   ui:{ notice:null, noticeTs:0 },
-  repCounter:{ day:null, target:0, L:0, R:0 }
+  repCounter:{ day:null, target:0, L:0, R:0 },
+  setCounters:{ day:null, items:{} },
+  activeSession:null
 };
 
 let state = load();
@@ -890,6 +912,7 @@ function setTimer({label, intervalSec, rounds, preset}){
   timer.running=false;
   timer.startMs=0;
   timer.elapsedMs=0;
+  timer._lastBoundary = -1;
   timer.intervalSec = Math.max(1, intervalSec|0);
   timer.rounds = Math.max(0, rounds|0);
   timer.label = label || "Timer";
@@ -917,6 +940,7 @@ function resetTimer(){
   timer.running=false;
   timer.startMs=0;
   timer.elapsedMs=0;
+  timer._lastBoundary = -1;
   document.getElementById("timerPill").innerHTML = "<strong>Idle</strong>";
   releaseWakeLock();
   renderTimer();
@@ -936,7 +960,7 @@ function tick(){
     const boundary = Math.floor(elapsedSec / timer.intervalSec);
     if(timer._lastBoundary !== boundary){
       timer._lastBoundary = boundary;
-      beep();
+      if(boundary>0) beep();
     }
     if(elapsedSec >= totalSec){
       timer.running=false;
@@ -982,6 +1006,207 @@ function renderWake(){
 
 /* ---- UI BUILD ---- */
 let currentSession = null;
+
+
+// --- ACTIVE SESSION LOCK (prevents reroll on refresh) ---
+function isActiveSessionValid(){
+  const a = state.activeSession;
+  return !!(a && a.dayNumber===state.dayNumber && a.sessionIndex===state.sessionIndex);
+}
+function buildSessionFresh(){
+  const practice = currentPractice();
+  if(practice.type==="P1"){
+    return {practice, sn: snPrescription(), mp:null};
+  }else{
+    const ladder = (state.mp.ladder in MP_TABLE) ? state.mp.ladder : "123";
+    const roll = choosePressRoll();
+    const def = MP_TABLE[ladder][roll];
+    return {practice, sn:null, mp:{ladder, roll, def}};
+  }
+}
+function getLockedSession(){
+  if(isActiveSessionValid()){
+    const a = state.activeSession;
+    const practice = {type:a.practiceType, label:a.practiceLabel};
+    if(a.practiceType==="P1"){
+      return {practice, sn: snPrescription(), mp:null};
+    }
+    const ladder = (a.mp && a.mp.ladder && (a.mp.ladder in MP_TABLE)) ? a.mp.ladder : ((state.mp.ladder in MP_TABLE) ? state.mp.ladder : "123");
+    const roll = (a.mp && Number.isFinite(a.mp.roll)) ? a.mp.roll : 3;
+    const def = MP_TABLE[ladder][roll];
+    return {practice, sn:null, mp:{ladder, roll, def}};
+  }
+
+  const fresh = buildSessionFresh();
+  // Persist minimal info so reloads render the same workout
+  state.activeSession = {
+    dayNumber: state.dayNumber,
+    sessionIndex: state.sessionIndex,
+    practiceType: fresh.practice.type,
+    practiceLabel: fresh.practice.label,
+    mp: fresh.mp ? { ladder: fresh.mp.ladder, roll: fresh.mp.roll } : null
+  };
+  save();
+  return fresh;
+}
+
+// --- SET COUNTERS (simple per-exercise set check-off) ---
+function resetSetCountersIfNeeded(){
+  if(state.setCounters.day !== state.dayNumber){
+    state.setCounters = { day: state.dayNumber, items: {} };
+  }
+}
+function getSetItem(key, target){
+  resetSetCountersIfNeeded();
+  const items = state.setCounters.items || (state.setCounters.items = {});
+  if(!items[key] || typeof items[key]!=="object") items[key] = {done:0, target: target};
+  // keep target in sync if it changes
+  items[key].target = target;
+  items[key].done = Math.max(0, Math.min(items[key].target, Number(items[key].done||0)));
+  return items[key];
+}
+function setItemDelta(key, target, delta){
+  const it = getSetItem(key, target);
+  it.done = Math.max(0, Math.min(it.target, it.done + delta));
+  save();
+  renderSetCounters();
+}
+function setItemTarget(key, newTarget){
+  resetSetCountersIfNeeded();
+  const items = state.setCounters.items || (state.setCounters.items = {});
+  const it = items[key] || (items[key] = {done:0, target:newTarget});
+  it.target = Math.max(1, Math.min(12, Number(newTarget||1)));
+  it.done = Math.max(0, Math.min(it.target, Number(it.done||0)));
+  save();
+  renderSetCounters();
+}
+
+function buildSetRow({label, key, target, adjustable}){
+  const it = getSetItem(key, target);
+  const done = it.done;
+  const t = it.target;
+  const row = document.createElement('div');
+  row.className = 'field';
+  row.style.marginBottom = '10px';
+
+  const top = document.createElement('div');
+  top.style.display = 'flex';
+  top.style.justifyContent = 'space-between';
+  top.style.alignItems = 'center';
+  top.style.gap = '10px';
+
+  const left = document.createElement('div');
+  left.innerHTML = `<div style="font-weight:950">${escapeHtml(label)}</div><div class="small mono">${done}/${t} sets</div>`;
+
+  const right = document.createElement('div');
+  right.style.display = 'flex';
+  right.style.gap = '8px';
+
+  const bMinus = document.createElement('button');
+  bMinus.className = 'btn';
+  bMinus.style.width = 'auto';
+  bMinus.style.minWidth = '52px';
+  bMinus.textContent = '-';
+  bMinus.onclick = ()=> setItemDelta(key, t, -1);
+
+  const bPlus = document.createElement('button');
+  bPlus.className = 'btn primary';
+  bPlus.style.width = 'auto';
+  bPlus.style.minWidth = '52px';
+  bPlus.textContent = '+';
+  bPlus.onclick = ()=> setItemDelta(key, t, +1);
+
+  right.appendChild(bMinus);
+  right.appendChild(bPlus);
+
+  top.appendChild(left);
+  top.appendChild(right);
+  row.appendChild(top);
+
+  if(adjustable){
+    const adjust = document.createElement('div');
+    adjust.style.display = 'flex';
+    adjust.style.gap = '8px';
+    adjust.style.marginTop = '8px';
+    adjust.style.alignItems = 'center';
+
+    const lbl = document.createElement('div');
+    lbl.className = 'small';
+    lbl.textContent = 'Target sets:';
+
+    const tMinus = document.createElement('button');
+    tMinus.className = 'btn';
+    tMinus.style.width = 'auto';
+    tMinus.style.minWidth = '52px';
+    tMinus.textContent = '-';
+    tMinus.onclick = ()=> setItemTarget(key, t-1);
+
+    const tShow = document.createElement('div');
+    tShow.className = 'pill';
+    tShow.innerHTML = `<strong class="mono">${t}</strong>`;
+
+    const tPlus = document.createElement('button');
+    tPlus.className = 'btn';
+    tPlus.style.width = 'auto';
+    tPlus.style.minWidth = '52px';
+    tPlus.textContent = '+';
+    tPlus.onclick = ()=> setItemTarget(key, t+1);
+
+    adjust.appendChild(lbl);
+    adjust.appendChild(tMinus);
+    adjust.appendChild(tShow);
+    adjust.appendChild(tPlus);
+    row.appendChild(adjust);
+  }
+
+  return {row, done, target:t};
+}
+
+function renderSetCounters(){
+  const wrap = document.getElementById('setCounterWrap');
+  const list = document.getElementById('setCounterList');
+  const pill = document.getElementById('setCounterPill');
+  const sub = document.getElementById('setCounterSub');
+  if(!wrap || !list || !pill || !sub || !currentSession){ return; }
+
+  const p = currentSession.practice.type;
+  list.innerHTML = '';
+
+  const rows = [];
+  if(p==='P1'){
+    rows.push({label:'Core (3 rounds)', key:'core', target:3, adjustable:false});
+  }else if(p==='P2A'){
+    rows.push({label:'Pull-ups', key:'pullups', target:5, adjustable:false});
+    rows.push({label:'Double Front Squat', key:'dfs', target:5, adjustable:false});
+  }else if(p==='P2B'){
+    rows.push({label:'Gorilla Rows', key:'gorilla', target:5, adjustable:false});
+  }
+
+  if(state.settings.addLoadedCleans && (p==='P2A' || p==='P2B')){
+    rows.push({label:'Loaded Cleans (optional)', key:'loadedCleans', target:5, adjustable:false});
+  }
+
+  if(!rows.length){
+    wrap.style.display = 'none';
+    return;
+  }
+
+  wrap.style.display = '';
+  sub.textContent = 'Tap + after each completed set (simple check-off).';
+
+  let totalDone = 0;
+  let totalTarget = 0;
+
+  rows.forEach(r=>{
+    const built = buildSetRow(r);
+    list.appendChild(built.row);
+    totalDone += built.done;
+    totalTarget += built.target;
+  });
+
+  pill.textContent = `${totalDone}/${totalTarget}`;
+}
+
 
 function resetRepCounterIfNeeded(target){
   if(state.repCounter.day !== state.dayNumber || state.repCounter.target !== target){
@@ -1041,6 +1266,9 @@ function setDefaultTimerPresets(){
   const presetA = document.getElementById("presetA");
   const presetB = document.getElementById("presetB");
 
+  const restSec = getMpRestSec();
+  const restBtnLabel = `REST ${formatMMSS(restSec)}`;
+
   if(p==="P1"){
     presetA.textContent = "TGU OTM 20:00";
     presetB.textContent = "Snatch cadence";
@@ -1049,11 +1277,21 @@ function setDefaultTimerPresets(){
     presetB.onclick = ()=> setSnatchTimerPreset();
 
     setSnatchTimerPreset();
+  }else if(p==="P2A"){
+    presetA.textContent = restBtnLabel;
+    presetB.textContent = "—";
+
+    presetA.onclick = ()=> setTimer({label:`Rest timer — ${formatMMSS(restSec)}`, intervalSec:restSec, rounds:1, preset:"REST"});
+    presetB.onclick = ()=>{};
+
+    setTimer({label:`Rest timer — ${formatMMSS(restSec)}`, intervalSec:restSec, rounds:1, preset:"REST"});
   }else if(p==="P2B"){
     presetA.textContent = "2HS OT2M 20:00";
-    presetB.textContent = "—";
-    presetB.onclick = ()=>{};
+    presetB.textContent = restBtnLabel;
+
     presetA.onclick = ()=> setTimer({label:"2HS — 10×10 OT2M (20:00)", intervalSec:120, rounds:10, preset:"2HS"});
+    presetB.onclick = ()=> setTimer({label:`Rest timer — ${formatMMSS(restSec)}`, intervalSec:restSec, rounds:1, preset:"REST"});
+
     setTimer({label:"2HS — 10×10 OT2M (20:00)", intervalSec:120, rounds:10, preset:"2HS"});
   }else{
     presetA.textContent = "—";
@@ -1064,8 +1302,7 @@ function setDefaultTimerPresets(){
   }
 }
 
-function setSnatchTimerPreset(){
-  const sn = currentSession.sn;
+function setSnatchTimerPreset(){  const sn = currentSession.sn;
   const reps = sn.reps;
   const sets = sn.sets;
 
@@ -1086,7 +1323,7 @@ function freqLabel(f){
 }
 
 function render(){
-  currentSession = buildSession();
+  currentSession = getLockedSession();
   const p = currentSession.practice;
 
   document.getElementById("dayTitle").textContent = `Day ${state.dayNumber}`;
@@ -1187,6 +1424,7 @@ function render(){
   document.getElementById("nextHint").textContent = `Next: ${previewNext()}`;
 
   renderRepCounter();
+  renderSetCounters();
 
   setDefaultTimerPresets();
   renderWake();
@@ -1227,6 +1465,9 @@ function completeAndNext(){
   // Clear reminder once you move on
   state.ui.notice = null;
 
+  // unlock current session so next render generates the next day
+  state.activeSession = null;
+
   save();
   render();
 }
@@ -1252,6 +1493,7 @@ function renderSettings(){
   document.getElementById("freq").value = String(state.settings.freq||4);
   document.getElementById("snBell").value = state.settings.snBell ?? "";
   document.getElementById("mpBell").value = state.settings.mpBell ?? "";
+  document.getElementById("mpRestSec").value = state.settings.mpRestSec ?? "180";
   document.getElementById("mp1rm").value = state.settings.mp1rm ?? "";
   document.getElementById("saveMsg").textContent = "";
 
@@ -1283,6 +1525,7 @@ function saveSettings(){
   state.settings.freq = Number(document.getElementById("freq").value);
   state.settings.snBell = document.getElementById("snBell").value.trim();
   state.settings.mpBell = document.getElementById("mpBell").value.trim();
+  state.settings.mpRestSec = document.getElementById("mpRestSec").value.trim();
   state.settings.mp1rm = document.getElementById("mp1rm").value.trim();
 
   // Advanced rules
