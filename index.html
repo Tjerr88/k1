@@ -3,173 +3,101 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>Hardstyle Method — Auto Engine (v2)</title>
+<title>Hardstyle Method — Training Engine</title>
 <meta name="description" content="Hardstyle Method – automatische planner met timers (TGU OTM / Snatch / 2HS), wake lock, en bracket-logica.">
 
 <style>
 :root{
-  --bg:#0b0f14;
-  --card:#111827;
-  --card2:#0f172a;
-  --text:#e5e7eb;
-  --muted:#9ca3af;
-  --line:rgba(255,255,255,.12);
-  --accent:#22c55e;
-  --blue:#60a5fa;
-  --warn:#f59e0b;
-  --danger:#ef4444;
+  color-scheme:dark;
+  --bg:#090a0b;--surface:#111315;--surface2:#17191c;--surface3:#1d2023;
+  --text:#f4f1ea;--muted:#969894;--faint:#6f726e;--line:rgba(244,241,234,.09);
+  --accent:#d5b77a;--accent2:#f0dbad;--good:#8fc5a0;--blue:#a9bfd3;
+  --warn:#dfa861;--danger:#d77e75;--shadow:0 28px 80px rgba(0,0,0,.38);
 }
 *{box-sizing:border-box}
+html{background:var(--bg);scroll-behavior:smooth}
 body{
-  margin:0;
-  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  margin:0;padding-bottom:112px;color:var(--text);
+  font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   background:
-    radial-gradient(900px 600px at 20% -10%, rgba(34,197,94,.14), transparent 60%),
-    radial-gradient(900px 600px at 120% 10%, rgba(96,165,250,.12), transparent 55%),
-    var(--bg);
-  color:var(--text);
-  padding-bottom:96px;
+    radial-gradient(900px 540px at 12% -10%,rgba(213,183,122,.11),transparent 66%),
+    radial-gradient(680px 500px at 108% 28%,rgba(169,191,211,.07),transparent 65%),
+    linear-gradient(180deg,#0c0d0f 0%,#090a0b 55%,#0b0c0d 100%);
+  min-height:100vh;
 }
-.wrap{max-width:980px;margin:0 auto;padding:12px}
-.card{
-  background:linear-gradient(180deg, rgba(17,24,39,.96), rgba(15,23,42,.92));
-  border:1px solid var(--line);
-  border-radius:18px;
-  box-shadow:0 18px 45px rgba(0,0,0,.32);
-  margin:10px 0;
-  overflow:hidden;
-}
-.hd{
-  padding:12px 14px;
-  border-bottom:1px solid var(--line);
-  display:flex;gap:10px;align-items:flex-start;justify-content:space-between;
-}
-.hd h1{margin:0;font-size:16px;letter-spacing:.2px}
-.hd h2{margin:0;font-size:14px;letter-spacing:.2px}
-.sub{margin-top:4px;color:var(--muted);font-size:12px}
-.bd{padding:14px}
-.badges{display:flex;gap:8px;flex-wrap:wrap}
-.badge{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:7px 10px;border-radius:999px;
-  border:1px solid var(--line);
-  background:rgba(255,255,255,.04);
-  font-size:12px;font-weight:900;color:var(--text);
-}
-.badge.good{border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.10)}
-.badge.blue{border-color:rgba(96,165,250,.35);background:rgba(96,165,250,.10)}
-.badge.warn{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.10)}
-.badge.danger{border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.10)}
-.small{font-size:12px;color:var(--muted)}
-.hr{height:1px;background:var(--line);margin:12px 0}
-.exercise{
-  display:flex;justify-content:space-between;gap:12px;align-items:flex-start;
-  padding:10px 0;border-bottom:1px solid var(--line);
-}
-.exercise:last-child{border-bottom:0}
-.exercise .name{font-weight:950}
-.exercise .note{font-size:12px;color:var(--muted);margin-top:3px;font-weight:800}
-.exercise .right{min-width:160px;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-.pill{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:6px 10px;border-radius:999px;
-  border:1px solid var(--line);
-  background:rgba(255,255,255,.03);
-  color:var(--muted);font-size:12px;font-weight:900;
-}
-.pill strong{color:var(--text)}
-.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
-.tab{
-  border:1px solid var(--line);
-  background:rgba(255,255,255,.03);
-  border-radius:14px;
-  padding:10px 12px;
-  font-weight:950;font-size:13px;
-  color:var(--muted);
-  cursor:pointer;
-  user-select:none;
-  min-height:44px;
-}
-.tab.active{color:var(--text);background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14)}
-.btn{
-  width:100%;
-  padding:12px;
-  border-radius:14px;
-  border:1px solid var(--line);
-  background:rgba(255,255,255,.04);
-  color:var(--text);
-  font-weight:950;
-  font-size:14px;
-  cursor:pointer;
-  user-select:none;
-  min-height:44px;
-}
-.btn:active{transform:translateY(1px)}
-.btn.primary{border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.14)}
-.btn.blue{border-color:rgba(96,165,250,.35);background:rgba(96,165,250,.12)}
-.btn.warn{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.12)}
-.btn.danger{border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.10)}
+button,input,select{font:inherit}
+button:focus-visible,input:focus-visible,select:focus-visible,.tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 20px 40px}
+.appHeader{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:6px 2px 22px}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.brandMark{width:46px;height:46px;border:1px solid rgba(213,183,122,.45);border-radius:14px;display:grid;place-items:center;color:var(--accent2);font-family:Georgia,serif;font-size:17px;letter-spacing:.08em;background:linear-gradient(145deg,rgba(213,183,122,.13),rgba(255,255,255,.015));box-shadow:inset 0 1px rgba(255,255,255,.08)}
+.eyebrow{font-size:10px;font-weight:800;letter-spacing:.2em;color:var(--accent);text-transform:uppercase}
+.brandTitle{font-family:Georgia,"Times New Roman",serif;font-size:24px;line-height:1.05;letter-spacing:-.025em;margin-top:3px;white-space:nowrap}
+.version{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);text-align:right}
+.tabs{position:sticky;top:12px;z-index:50;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:0 0 18px;padding:5px;border:1px solid var(--line);border-radius:16px;background:rgba(17,19,21,.84);backdrop-filter:blur(18px);box-shadow:0 12px 36px rgba(0,0,0,.22)}
+.tab{min-height:44px;display:grid;place-items:center;border:0;border-radius:11px;padding:10px 12px;color:var(--muted);font-size:12px;font-weight:750;letter-spacing:.03em;cursor:pointer;user-select:none;transition:.2s ease}
+.tab:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.tab.active{color:#17130c;background:linear-gradient(135deg,var(--accent2),var(--accent));box-shadow:0 7px 20px rgba(213,183,122,.18)}
+.card{margin:14px 0;overflow:hidden;border:1px solid var(--line);border-radius:22px;background:linear-gradient(160deg,rgba(24,26,29,.96),rgba(15,17,19,.98));box-shadow:var(--shadow)}
+.card .card{border-radius:18px;background:linear-gradient(155deg,rgba(29,32,35,.92),rgba(18,20,22,.95));box-shadow:0 12px 34px rgba(0,0,0,.22)}
+.hd{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 22px 18px;border-bottom:1px solid var(--line)}
+.hd h1,.hd h2{margin:0;letter-spacing:-.025em}.hd h1{font-family:Georgia,"Times New Roman",serif;font-size:24px;font-weight:600}.hd h2{font-size:14px;font-weight:750}
+.sub{max-width:680px;margin-top:5px;color:var(--muted);font-size:12px;line-height:1.55}
+.bd{padding:22px}
+.badges{display:flex;gap:7px;flex-wrap:wrap}
+.badge,.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.025);color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.055em;text-transform:uppercase}
+.badge{padding:8px 10px}.pill{padding:7px 10px}.pill strong{color:var(--text)}
+.badge.good{border-color:rgba(143,197,160,.23);background:rgba(143,197,160,.08);color:#bad9c3}
+.badge.blue{border-color:rgba(213,183,122,.22);background:rgba(213,183,122,.075);color:var(--accent2)}
+.badge.warn{border-color:rgba(223,168,97,.28);background:rgba(223,168,97,.09);color:#edc58e}
+.badge.danger{border-color:rgba(215,126,117,.28);background:rgba(215,126,117,.09);color:#e7aaa3}
+.small{font-size:11px;line-height:1.55;color:var(--muted)}
+.hr{height:1px;margin:18px 0;background:var(--line)}
+#exerciseList{counter-reset:exercise}
+.exercise{position:relative;counter-increment:exercise;display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:13px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
+.exercise::before{content:counter(exercise,decimal-leading-zero);font-family:ui-monospace,monospace;font-size:10px;letter-spacing:.04em;color:var(--faint)}
+.exercise:last-child{border-bottom:0}.exercise .name{font-size:14px;font-weight:760;letter-spacing:-.01em}.exercise .note{max-width:570px;margin-top:4px;color:var(--muted);font-size:11px;line-height:1.5;font-weight:500}.exercise .right{min-width:150px;display:flex;align-items:flex-end;flex-direction:column;gap:6px}
+.btn{width:100%;min-height:46px;padding:12px 16px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.035);color:var(--text);font-size:12px;font-weight:800;letter-spacing:.025em;cursor:pointer;user-select:none;transition:transform .15s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease}
+.btn:hover{background:rgba(255,255,255,.065);border-color:rgba(255,255,255,.16)}.btn:active{transform:translateY(1px)}
+.btn.primary{border-color:rgba(213,183,122,.48);background:linear-gradient(135deg,var(--accent2),var(--accent));color:#18130b;box-shadow:0 10px 28px rgba(213,183,122,.14)}
+.btn.blue{border-color:rgba(213,183,122,.25);background:rgba(213,183,122,.09);color:var(--accent2)}
+.btn.warn{border-color:rgba(223,168,97,.3);background:rgba(223,168,97,.11);color:#f0c98f}.btn.danger{border-color:rgba(215,126,117,.25);background:rgba(215,126,117,.08);color:#e9aaa3}
 .grid{display:grid;grid-template-columns:1fr;gap:10px}
-@media(min-width:720px){.grid{grid-template-columns:1fr 1fr}}
-.field{
-  border:1px solid var(--line);
-  background:rgba(255,255,255,.03);
-  border-radius:16px;
-  padding:10px 12px;
-}
-.field label{display:block;font-size:12px;color:var(--muted);font-weight:950;margin-bottom:6px}
-.field input,.field select{
-  width:100%;
-  border:0;outline:0;background:transparent;
-  color:var(--text);font-size:14px;font-weight:950;
-  min-height:30px;
-}
-.toggle{
-  display:flex;gap:10px;align-items:center;
-  padding:10px 12px;border-radius:16px;border:1px solid var(--line);
-  background:rgba(255,255,255,.03);
-}
-.toggle input{transform:scale(1.15)}
-.timerTime{font-size:30px;font-weight:1000;letter-spacing:.4px}
-.progress{
-  height:10px;border-radius:999px;
-  border:1px solid var(--line);
-  background:rgba(255,255,255,.03);
-  overflow:hidden;
-}
-.progress > div{
-  height:100%;
-  width:0%;
-  background:linear-gradient(90deg, rgba(34,197,94,.9), rgba(96,165,250,.85));
-}
-.fixed{
-  position:fixed;left:0;right:0;bottom:0;
-  border-top:1px solid var(--line);
-  background:rgba(11,15,20,.88);
-  backdrop-filter:blur(10px);
-  z-index:60;
-}
-.fixedInner{
-  max-width:980px;margin:0 auto;
-  padding:10px 12px;
-  display:flex;gap:10px;align-items:center;justify-content:space-between;
-}
-.fixedTitle{
-  font-weight:950;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  max-width:48vw;
-}
-.mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;}
+.field,.toggle{border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.025)}
+.field{padding:12px 14px;transition:border-color .2s ease,background .2s ease}.field:focus-within{border-color:rgba(213,183,122,.45);background:rgba(213,183,122,.035)}
+.field label{display:block;margin-bottom:7px;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase}
+.field input,.field select{width:100%;min-height:30px;border:0;outline:0;background:transparent;color:var(--text);font-size:14px;font-weight:700}.field select option{background:#17191c;color:var(--text)}
+.toggle{display:flex;align-items:center;gap:11px;padding:12px 14px}.toggle input{width:16px;height:16px;accent-color:var(--accent)}
+.timerTime{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:clamp(42px,9vw,72px);line-height:.95;font-weight:650;letter-spacing:-.07em;color:var(--text);font-variant-numeric:tabular-nums}
+.progress{height:5px;overflow:hidden;border-radius:999px;background:rgba(255,255,255,.07)}.progress>div{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 0 16px rgba(213,183,122,.38)}
+#tab-training>.card>.bd>.card{border-color:rgba(213,183,122,.16);background:radial-gradient(500px 220px at 20% 0%,rgba(213,183,122,.08),transparent 65%),linear-gradient(155deg,#1b1d20,#121416)}
+.fixed{position:fixed;left:0;right:0;bottom:0;z-index:60;border-top:1px solid var(--line);background:rgba(10,11,12,.88);backdrop-filter:blur(20px);box-shadow:0 -18px 50px rgba(0,0,0,.28)}
+.fixedInner{max-width:1040px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:14px}.fixedTitle{max-width:45vw;overflow:hidden;color:var(--muted);font-size:11px;font-weight:650;white-space:nowrap;text-overflow:ellipsis}.fixed .btn{width:auto;min-width:108px}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-variant-numeric:tabular-nums}
+@media(min-width:720px){.grid{grid-template-columns:1fr 1fr}.wrap{padding-top:30px}.bd{padding:24px}.tabs{max-width:500px;margin-left:auto;margin-right:auto}.fixed .btn{min-width:145px}}
+@media(max-width:620px){body{padding-bottom:138px}.wrap{padding:16px 12px 30px}.appHeader{padding:4px 4px 16px}.version{display:none}.brandTitle{font-size:21px}.brandMark{width:42px;height:42px}.tabs{top:8px;margin-bottom:12px}.card{border-radius:18px;margin:10px 0}.hd{padding:17px 16px 15px}.hd h1{font-size:21px}.bd{padding:16px}.exercise{grid-template-columns:26px minmax(0,1fr);align-items:start}.exercise .right{grid-column:2;min-width:0;align-items:flex-start;margin-top:2px}.fixedInner{padding:10px 12px;align-items:stretch;flex-direction:column;gap:8px}.fixedInner>div:first-child{display:none!important}.fixedInner>div:last-child{display:grid!important;grid-template-columns:.8fr 1.2fr;gap:8px!important}.fixed .btn{width:100%;min-width:0}.timerTime{font-size:48px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
 
 <body>
 <div class="wrap">
 
+  <header class="appHeader">
+    <div class="brand">
+      <div class="brandMark" aria-hidden="true">HM</div>
+      <div>
+        <div class="eyebrow">Power endurance system</div>
+        <div class="brandTitle">Hardstyle Method</div>
+      </div>
+    </div>
+    <div class="version">Method engine<br>Edition 04</div>
+  </header>
+
   <div class="tabs">
-    <div class="tab active" data-tab="training">Training</div>
-    <div class="tab" data-tab="settings">Settings</div>
-    <div class="tab" data-tab="status">Status</div>
+    <div class="tab active" data-tab="training" tabindex="0">Training</div>
+    <div class="tab" data-tab="settings" tabindex="0">Instellingen</div>
+    <div class="tab" data-tab="status" tabindex="0">Voortgang</div>
   </div>
 
   <!-- TRAINING -->
@@ -195,10 +123,10 @@ body{
         <div class="card" style="margin:0; box-shadow:none; border-radius:16px;">
           <div class="hd" style="padding:12px 12px 10px;">
             <div>
-              <h2>Timer</h2>
+              <h2>Trainingstimer</h2>
               <div class="sub" id="timerLabel">—</div>
             </div>
-            <span class="pill" id="timerPill"><strong>Idle</strong></span>
+            <span class="pill" id="timerPill"><strong>Gereed</strong></span>
           </div>
           <div class="bd" style="padding:12px;">
             <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-end;flex-wrap:wrap">
@@ -208,8 +136,8 @@ body{
               </div>
               <div style="display:flex;gap:8px;flex-wrap:wrap">
                 <button class="btn primary" id="btnStart">Start</button>
-                <button class="btn" id="btnPause">Pause</button>
-                <button class="btn" id="btnReset">Reset</button>
+                <button class="btn" id="btnPause">Pauze</button>
+                <button class="btn" id="btnReset">Herstart</button>
               </div>
             </div>
 
@@ -217,8 +145,8 @@ body{
 
             <div class="badges" style="justify-content:space-between">
               <span class="badge blue">Interval: <span class="mono" id="timerInterval">—</span></span>
-              <span class="badge blue">Round: <span class="mono" id="timerRound">—</span></span>
-              <span class="badge blue">Wake lock: <span class="mono" id="wakeLockState">—</span></span>
+              <span class="badge blue">Ronde: <span class="mono" id="timerRound">—</span></span>
+              <span class="badge blue">Scherm actief: <span class="mono" id="wakeLockState">—</span></span>
             </div>
 
             <div class="hr"></div>
@@ -235,7 +163,7 @@ body{
             <div class="toggle" style="margin-top:10px">
               <input type="checkbox" id="timerSound" checked>
               <div>
-                <div style="font-weight:950">Beep op interval</div>
+                  <div style="font-weight:950">Geluidssignaal per interval</div>
                 <div class="small">Offline. Zet je telefoonvolume aan.</div>
               </div>
             </div>
@@ -247,9 +175,58 @@ body{
 
         <div id="exerciseList"></div>
 
+        <div id="snRetestWrap" class="card" style="display:none;margin:10px 0 0;box-shadow:none;border-radius:16px;border-color:rgba(245,158,11,.35)">
+          <div class="hd" style="padding:12px 12px 10px">
+            <div>
+              <h2>Snatch hertest vereist</h2>
+              <div class="sub" id="snRetestIntro">—</div>
+            </div>
+            <span class="pill"><strong id="snRetestReason">—</strong></span>
+          </div>
+          <div class="bd" style="padding:12px">
+            <div class="grid">
+              <div class="field">
+                <label>Huidige bell — links / niet-dominant</label>
+                <input id="snRetestCurrentL" inputmode="numeric" placeholder="max explosieve reps">
+              </div>
+              <div class="field">
+                <label>Huidige bell — rechts / dominant</label>
+                <input id="snRetestCurrentR" inputmode="numeric" placeholder="max explosieve reps">
+              </div>
+              <div class="toggle">
+                <input type="checkbox" id="snRetestCurrentQuality" checked>
+                <div><div style="font-weight:950">Alle reps explosief</div><div class="small">Stop zodra vermogen of techniek afneemt.</div></div>
+              </div>
+            </div>
+            <div class="hr"></div>
+            <div class="small" id="snRetestNextHelp">Vul de volgende bell alleen in wanneer de app daarom vraagt.</div>
+            <div class="grid" style="margin-top:10px">
+              <div class="field">
+                <label>Volgende bell (kg)</label>
+                <input id="snRetestNextBell" inputmode="decimal" placeholder="bijv. 28">
+              </div>
+              <div class="field">
+                <label>Volgende bell — links</label>
+                <input id="snRetestNextL" inputmode="numeric" placeholder="20–25 vereist">
+              </div>
+              <div class="field">
+                <label>Volgende bell — rechts</label>
+                <input id="snRetestNextR" inputmode="numeric" placeholder="20–25 vereist">
+              </div>
+              <div class="toggle">
+                <input type="checkbox" id="snRetestNextQuality" checked>
+                <div><div style="font-weight:950">Alle reps explosief</div><div class="small">Beide armen moeten 20–25 halen.</div></div>
+              </div>
+            </div>
+            <div class="hr"></div>
+            <button class="btn warn" id="btnEvaluateSnRetest">Hertest beoordelen</button>
+            <div class="small" id="snRetestMsg" style="margin-top:8px"></div>
+          </div>
+        </div>
+
         <div id="noticeWrap" class="toggle" style="display:none;margin-top:10px;border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.08)">
   <div>
-    <div style="font-weight:950">Reminder</div>
+    <div style="font-weight:950">Belangrijk</div>
     <div class="small" id="noticeText">—</div>
   </div>
 </div>
@@ -257,8 +234,8 @@ body{
         <div id="repCounterWrap" class="card" style="display:none;margin:10px 0 0; box-shadow:none; border-radius:16px;">
           <div class="hd" style="padding:12px 12px 10px;">
             <div>
-              <h2>Press rep counter</h2>
-              <div class="sub" id="repCounterSub">Track reps per arm (no fixed rest).</div>
+              <h2>Press-herhalingen</h2>
+              <div class="sub" id="repCounterSub">Registreer iedere strikte herhaling per arm.</div>
             </div>
             <span class="pill"><strong id="repCounterTarget">—</strong></span>
           </div>
@@ -283,19 +260,18 @@ body{
             </div>
             <div class="small" style="margin-top:8px" id="repCounterHint">—</div>
           </div>
-        
+        </div>
 
         <div id="setCounterWrap" class="card" style="display:none;margin:10px 0 0; box-shadow:none; border-radius:16px;">
           <div class="hd" style="padding:12px 12px 10px;">
             <div>
-              <h2>Set counters</h2>
-              <div class="sub" id="setCounterSub">Tap + after each completed set (simple check-off).</div>
+              <h2>Sets</h2>
+              <div class="sub" id="setCounterSub">Tik op + na iedere voltooide set.</div>
             </div>
             <span class="pill"><strong id="setCounterPill">—</strong></span>
           </div>
           <div class="bd" style="padding:12px;" id="setCounterList"></div>
         </div>
-</div>
 
         <div class="hr"></div>
 
@@ -303,7 +279,7 @@ body{
           <div class="toggle" id="snFailWrap">
             <input type="checkbox" id="snFail">
             <div>
-              <div style="font-weight:950">Snatch: practice NOT achieved</div>
+              <div style="font-weight:950">Snatchtraining niet behaald</div>
               <div class="small">Bij failure reset SN naar LOW.</div>
             </div>
           </div>
@@ -311,7 +287,7 @@ body{
           <div class="toggle" id="mpFailWrap">
             <input type="checkbox" id="mpFail">
             <div>
-              <div style="font-weight:950">Press: practice NOT achieved</div>
+              <div style="font-weight:950">Presstraining niet behaald</div>
               <div class="small">Bij failure telt roll 6 niet mee.</div>
             </div>
           </div>
@@ -319,7 +295,7 @@ body{
           <div class="toggle" id="mpRoll6Wrap">
             <input type="checkbox" id="mpRoll6Count">
             <div>
-              <div style="font-weight:950">If Roll 6: count toward progression</div>
+              <div style="font-weight:950">Roll 6 meetellen voor progressie</div>
               <div class="small">Default aan. Zet uit als RPE niet ~6–7 was.</div>
             </div>
           </div>
@@ -336,15 +312,15 @@ body{
     <div class="card">
       <div class="hd">
         <div>
-          <h1>Settings</h1>
-          <div class="sub">2/3/4 dagen + Initial Tests (SN & MP) + optioneel 1RM. Tests kunnen automatisch je startgewichten + startpunt instellen.</div>
+          <h1>Instellingen</h1>
+          <div class="sub">Frequentie, startgewichten, tests en progressieregels op één plek.</div>
         </div>
         <span class="pill"><strong>Config</strong></span>
       </div>
       <div class="bd">
         <div class="grid">
           <div class="field">
-            <label for="freq">Training frequency</label>
+            <label for="freq">Trainingsfrequentie</label>
             <select id="freq">
               <option value="2">2 days/week</option>
               <option value="3">3 days/week</option>
@@ -371,7 +347,7 @@ body{
 
 
           <div class="field">
-            <label for="mp1rm">Optional: MP 1RM estimate (kg)</label>
+            <label for="mp1rm">Optioneel: geschatte MP 1RM (kg)</label>
             <input id="mp1rm" inputmode="decimal" placeholder="e.g. 36 (optional)">
             <div class="small">Roll 1: advies = volgende bell onder je 1RM (naar beneden op 4 kg).</div>
           </div>
@@ -383,7 +359,7 @@ body{
         <div class="card" style="margin:0; box-shadow:none; border-radius:16px;">
           <div class="hd" style="padding:12px 12px 10px;">
             <div>
-              <h2>Initial Tests</h2>
+              <h2>Starttests</h2>
               <div class="sub">Vul je testresultaten in. De app zet automatisch je SN/MP startgewichten en startpunt en reset het programma naar Day 1.</div>
             </div>
             <span class="pill"><strong>Setup</strong></span>
@@ -424,7 +400,7 @@ body{
                 <input id="mpTestND" inputmode="numeric" placeholder="e.g. 8">
               </div>
               <div class="field">
-                <label for="mpTestNext">Optional: reps on next bell up (+4 kg)</label>
+                <label for="mpTestNext">Optioneel: reps op volgende bell (+4 kg)</label>
                 <input id="mpTestNext" inputmode="numeric" placeholder="e.g. 6">
                 <div class="small">Volgens de tekst alleen nodig als je 10+ reps haalde op je testbell.</div>
               </div>
@@ -450,7 +426,7 @@ body{
         <div class="card" style="margin:0; box-shadow:none; border-radius:16px;">
           <div class="hd" style="padding:12px 12px 10px;">
             <div>
-              <h2>Advanced rules</h2>
+              <h2>Progressieregels</h2>
               <div class="sub">Ranges uit de methode (kies conservatief als je herstel beperkt is).</div>
             </div>
             <span class="pill"><strong>Rules</strong></span>
@@ -489,22 +465,6 @@ body{
 
             <div class="grid">
               <div class="toggle">
-                <input type="checkbox" id="remindSnAfterB2" checked>
-                <div>
-                  <div style="font-weight:950">Reminder: Snatch re-test after Bracket 2</div>
-                  <div class="small">Nieuwe max-rep snatch test om je (volgende) bell te bepalen.</div>
-                </div>
-              </div>
-
-              <div class="toggle">
-                <input type="checkbox" id="remindSnAfterB4" checked>
-                <div>
-                  <div style="font-weight:950">Reminder: Snatch re-test after Bracket 4</div>
-                  <div class="small">Bracket 4 afgerond → test na 2–3 dagen rust.</div>
-                </div>
-              </div>
-
-              <div class="toggle">
                 <input type="checkbox" id="addLoadedCleans">
                 <div>
                   <div style="font-weight:950">Add 5×3 loaded cleans after Press sessions</div>
@@ -517,13 +477,13 @@ body{
 
         <div class="hr"></div>
 
-        <button class="btn primary" id="btnSave">Save</button>
+        <button class="btn primary" id="btnSave">Instellingen opslaan</button>
 
 
         <div class="small" id="saveMsg" style="margin-top:8px"></div>
 
         <div class="hr"></div>
-        <button class="btn danger" id="btnResetAll">Reset ALL data</button>
+        <button class="btn danger" id="btnResetAll">Alle gegevens wissen</button>
         <div class="small" style="margin-top:8px">Wist alle progressie op dit apparaat.</div>
       </div>
     </div>
@@ -534,10 +494,10 @@ body{
     <div class="card">
       <div class="hd">
         <div>
-          <h1>Status</h1>
-          <div class="sub">Wat de app bijhoudt (SN/MP los, timers, heavy-window).</div>
+          <h1>Voortgang</h1>
+          <div class="sub">Je actuele snatch- en presspositie, volgende sessie en heavy-window.</div>
         </div>
-        <span class="pill"><strong>State</strong></span>
+        <span class="pill"><strong>Actueel</strong></span>
       </div>
       <div class="bd" id="statusBox"></div>
     </div>
@@ -553,7 +513,7 @@ body{
     </div>
     <div style="display:flex;gap:8px">
       <button class="btn primary" id="btnBottomStart">Start</button>
-      <button class="btn blue" id="btnComplete">Complete & Next</button>
+      <button class="btn blue" id="btnComplete">Voltooid · volgende</button>
     </div>
   </div>
 </div>
@@ -567,8 +527,6 @@ function getSnHighTarget(){ const v = Number(state.settings.snHighTarget||6); re
 function getMpRoll6Target(){ const v = Number(state.settings.mpRoll6Target||6); return (v===4||v===5)?v:6; }
 function getSnCadenceAfter(){ const v = Number(state.settings.snCadenceAfter||6); return (v===7||v===8)?v:6; }
 function getMpRestSec(){ const v = Number(state.settings.mpRestSec||180); return Math.max(30, Math.min(600, Math.round(v))); }
-function remindAfterB2(){ return (state.settings.remindSnAfterB2 ?? true) === true; }
-function remindAfterB4(){ return (state.settings.remindSnAfterB4 ?? true) === true; }
 /* ---- DATA ---- */
 const SN_CYCLE = ["low","med","low","high"];
 const SN_TABLE = {
@@ -614,8 +572,9 @@ const DEFAULT = {
   settings:{freq:4, snBell:"24", mpBell:"24", mp1rm:"", snTestBell:"", snTestL:"", snTestR:"", snTestQuality:true, mpTestBell:"", mpTestND:"", mpTestNext:"", snHighTarget:"6", snCadenceAfter:"6", mpRoll6Target:"6", remindSnAfterB2:true, remindSnAfterB4:true, mpRestSec:"180", addLoadedCleans:false },
   sessionIndex:0,
   dayNumber:1,
+  nextTrainingAt:null,
   pressAlt:"A",
-  sn:{ bracket:1, phase:"startup", cycleIndex:0, nextDay:"low", lmNext:"low", highSuccess:0, cadence75Done:0 },
+  sn:{ bracket:1, phase:"startup", cycleIndex:0, nextDay:"low", lmNext:"low", highSuccess:0, cadence75Done:0, pendingRetest:null, baselineBell:null, baselineL:null, baselineR:null },
   mp:{ ladder:"123", lastRoll:null, forceNext3:false, heavyLog:[], roll6Count:0 },
   ui:{ notice:null, noticeTs:0 },
   repCounter:{ day:null, target:0, L:0, R:0 },
@@ -655,9 +614,9 @@ function getSequence(){
   return PRACTICES_2;
 }
 function resolvePractice(token){
-  if(token==="P1") return {type:"P1", label:"Practice 1 — Get Up + Snatch + Core"};
-  if(token==="P2A") return {type:"P2A", label:"Practice 2A — Press + Pull-ups + DFS"};
-  if(token==="P2B") return {type:"P2B", label:"Practice 2B — Press + Rows + 2HS"};
+  if(token==="P1") return {type:"P1", label:"Training 1 · Get-up, snatch en core"};
+  if(token==="P2A") return {type:"P2A", label:"Training 2A · Press, pull-ups en squat"};
+  if(token==="P2B") return {type:"P2B", label:"Training 2B · Press, rows en swings"};
   if(token==="P2"){
     const t = (state.pressAlt==="A") ? "P2A" : "P2B";
     return resolvePractice(t);
@@ -670,10 +629,26 @@ function currentPractice(){
   return resolvePractice(token);
 }
 
+function restDaysAfterSession(index){
+  const f = Number(state.settings.freq||4);
+  if(f===4) return [1,2,1,3][index % 4];
+  if(f===3) return [2,2,3][index % 3];
+  return [3,4][index % 2];
+}
+
+function nextTrainingLabel(){
+  if(!state.nextTrainingAt) return "start wanneer je hersteld bent";
+  const d = new Date(state.nextTrainingAt);
+  const today = new Date();
+  if(d.getTime() <= today.getTime()) return "vanaf vandaag";
+  return `vanaf ${d.toLocaleDateString("nl-NL",{weekday:"short",day:"numeric",month:"short"})}`;
+}
+
 /* ---- SNATCH ENGINE ---- */
 const SN_STARTUP_CYCLE = ["low","med","low","high"];
 
 function snDay(){
+  if(state.sn.pendingRetest) return "retest";
   const phase = state.sn.phase || "startup";
   if(phase==="startup"){
     return SN_STARTUP_CYCLE[clamp(state.sn.cycleIndex,0,3)];
@@ -682,10 +657,14 @@ function snDay(){
 }
 
 function snPrescription(){
+  if(state.sn.pendingRetest){
+    return { bracket:Number(state.sn.bracket||1), day:"retest", reps:0, sets:0, cadence:null, retest:true };
+  }
   const bracket = clamp(Number(state.sn.bracket||1),1,4);
   const day = snDay();
   const row = SN_TABLE[bracket][day];
-  return { bracket, day, reps: row.reps, sets: row.sets };
+  const cadence = (state.sn.cadence75Done||0) >= getSnCadenceAfter() ? 120 : 75;
+  return { bracket, day, reps: row.reps, sets: row.sets, cadence, retest:false };
 }
 
 function setNotice(msg){
@@ -713,7 +692,12 @@ function snEnterOngoingAfterStartupHigh(){
 }
 
 function snOnComplete(success){
+  if(state.sn.pendingRetest) return;
+
   if(!success){
+    if(currentSession && currentSession.sn && currentSession.sn.cadence===120){
+      state.sn.cadence75Done = 0;
+    }
     if((state.sn.phase||"startup")==="startup"){
       state.sn.cycleIndex = 0;
       state.sn.nextDay = "low";
@@ -723,8 +707,11 @@ function snOnComplete(success){
     return;
   }
 
-  if(currentTimerPreset === "SN_75"){
+  if(currentSession && currentSession.sn && currentSession.sn.cadence===75){
     state.sn.cadence75Done = (state.sn.cadence75Done||0) + 1;
+  }else if(currentSession && currentSession.sn && currentSession.sn.cadence===120){
+    // 10/2 is one periodic stimulus; the following practices return to 5/75.
+    state.sn.cadence75Done = 0;
   }
 
   const day = snDay();
@@ -754,29 +741,97 @@ function snOnComplete(success){
     if((state.sn.highSuccess||0) >= target){
       if(state.sn.bracket < 4){
         const completed = state.sn.bracket;
-        state.sn.bracket += 1;
-        state.sn.highSuccess = 0;
-        snStartNewBracket();
-
-        if(completed === 2 && remindAfterB2()){
-          setNotice("Snatch: Bracket 2 completed → recommended: repeat max-rep snatch test to reassess your bell (20–25 explosive reps/arm).");
+        if(completed === 2){
+          state.sn.pendingRetest = "b2";
+          state.sn.phase = "retest";
+          setNotice("Snatch: Bracket 2 voltooid. Rond eerst de max-rep-hertest af; de app kiest daarna automatisch Bracket 3 of een nieuwe bell op Bracket 1.");
         }else{
+          state.sn.bracket += 1;
+          state.sn.highSuccess = 0;
+          snStartNewBracket();
           setNotice(`Snatch: Bracket ${completed} completed → start-up for Bracket ${state.sn.bracket}: LOW → MED → LOW → HIGH.`);
         }
       }else{
-        state.sn.highSuccess = 0;
-        state.sn.phase = "ongoing";
-        state.sn.nextDay = "high";
-        state.sn.lmNext = "low";
-
-        if(remindAfterB4()){
-          setNotice("Snatch: Bracket 4 completed → take 2–3 days easy, then perform a max-rep snatch test. If you can hit 20–25 explosive reps/arm on the next bell up, restart at Bracket 1.");
-        }else{
-          setNotice("Snatch: Bracket 4 completed → consider a max-rep snatch test to reassess bell selection.");
-        }
+        state.sn.pendingRetest = "b4";
+        state.sn.phase = "retest";
+        setNotice("Snatch: Bracket 4 voltooid. Neem enkele rustige dagen en rond daarna de max-rep-hertest af voordat je verdergaat.");
       }
     }
   }
+}
+
+function intField(id){
+  const v = parseInt(document.getElementById(id).value, 10);
+  return Number.isFinite(v) ? v : null;
+}
+
+function resetSnForBell(bell, left, right){
+  state.settings.snBell = String(bell);
+  state.sn = {
+    bracket:1, phase:"startup", cycleIndex:0, nextDay:"low", lmNext:"low",
+    highSuccess:0, cadence75Done:0, pendingRetest:null,
+    baselineBell:bell, baselineL:left, baselineR:right
+  };
+}
+
+function continueSnAtBracket(bracket, message){
+  state.sn.bracket = bracket;
+  state.sn.pendingRetest = null;
+  state.sn.highSuccess = 0;
+  state.sn.cadence75Done = 0;
+  snStartNewBracket();
+  setNotice(message);
+}
+
+function evaluateSnRetest(){
+  if(!state.sn.pendingRetest) return;
+  const msg = document.getElementById("snRetestMsg");
+  const currentL = intField("snRetestCurrentL");
+  const currentR = intField("snRetestCurrentR");
+  const currentQuality = document.getElementById("snRetestCurrentQuality").checked;
+  if(currentL===null || currentR===null || !currentQuality){
+    msg.textContent = "Vul voor beide armen explosieve max-reps op de huidige bell in.";
+    return;
+  }
+
+  const nextBell = num(document.getElementById("snRetestNextBell").value);
+  const nextL = intField("snRetestNextL");
+  const nextR = intField("snRetestNextR");
+  const nextQuality = document.getElementById("snRetestNextQuality").checked;
+  const hasNext = nextBell!==null && nextL!==null && nextR!==null;
+  const nextValid = hasNext && nextQuality && nextL>=20 && nextL<=25 && nextR>=20 && nextR<=25;
+
+  const baselineKnown = Number(state.sn.baselineBell)===num(state.settings.snBell) && Number.isFinite(Number(state.sn.baselineL)) && Number.isFinite(Number(state.sn.baselineR));
+  const gainedTenEach = baselineKnown
+    ? currentL >= Number(state.sn.baselineL)+10 && currentR >= Number(state.sn.baselineR)+10
+    : currentL>=30 && currentR>=30;
+  const currentReadyToTestUp = state.sn.pendingRetest==="b2" ? gainedTenEach : (currentL>25 && currentR>25);
+
+  if(currentReadyToTestUp && !hasNext){
+    msg.textContent = "Goed resultaat. Test nu de eerstvolgende bell na 10 minuten rust (of in de volgende sessie) en vul beide armen hierboven in.";
+    return;
+  }
+
+  if(currentReadyToTestUp && nextValid){
+    resetSnForBell(nextBell, nextL, nextR);
+    setNotice(`Snatch: ${nextBell} kg bevestigd met 20–25 explosieve reps per arm. Herstart op Bracket 1 LOW.`);
+  }else if(state.sn.pendingRetest==="b2"){
+    continueSnAtBracket(3, "Snatch: nog niet klaar om te bellen. Ga verder op de huidige bell met Bracket 3 LOW.");
+  }else{
+    // The source gives no lower-bracket reset when bell-up is not achieved after B4.
+    // Continue the top bracket conservatively, starting again at LOW.
+    continueSnAtBracket(4, "Snatch: nieuwe bell nog niet bevestigd. Blijf op de huidige bell in Bracket 4 en start weer bij LOW.");
+  }
+
+  state.activeSession = null;
+  save();
+  document.getElementById("snRetestCurrentL").value = "";
+  document.getElementById("snRetestCurrentR").value = "";
+  document.getElementById("snRetestNextBell").value = "";
+  document.getElementById("snRetestNextL").value = "";
+  document.getElementById("snRetestNextR").value = "";
+  msg.textContent = "";
+  render();
 }
 
 /* ---- PRESS DICE RULES ---- *//* ---- PRESS DICE RULES ---- */
@@ -917,7 +972,7 @@ function setTimer({label, intervalSec, rounds, preset}){
   timer.rounds = Math.max(0, rounds|0);
   timer.label = label || "Timer";
   currentTimerPreset = preset || "NONE";
-  document.getElementById("timerPill").innerHTML = "<strong>Idle</strong>";
+  document.getElementById("timerPill").innerHTML = "<strong>Gereed</strong>";
   renderTimer();
 }
 
@@ -925,7 +980,7 @@ function startTimer(){
   if(timer.running) return;
   timer.running = true;
   timer.startMs = now() - timer.elapsedMs;
-  document.getElementById("timerPill").innerHTML = "<strong>Running</strong>";
+  document.getElementById("timerPill").innerHTML = "<strong>Actief</strong>";
   tickHandle = tickHandle || setInterval(tick, 200);
   requestWakeLock();
 }
@@ -933,7 +988,7 @@ function pauseTimer(){
   if(!timer.running) return;
   timer.running = false;
   timer.elapsedMs = now() - timer.startMs;
-  document.getElementById("timerPill").innerHTML = "<strong>Paused</strong>";
+  document.getElementById("timerPill").innerHTML = "<strong>Gepauzeerd</strong>";
   releaseWakeLock();
 }
 function resetTimer(){
@@ -941,7 +996,7 @@ function resetTimer(){
   timer.startMs=0;
   timer.elapsedMs=0;
   timer._lastBoundary = -1;
-  document.getElementById("timerPill").innerHTML = "<strong>Idle</strong>";
+  document.getElementById("timerPill").innerHTML = "<strong>Gereed</strong>";
   releaseWakeLock();
   renderTimer();
 }
@@ -964,7 +1019,7 @@ function tick(){
     }
     if(elapsedSec >= totalSec){
       timer.running=false;
-      document.getElementById("timerPill").innerHTML = "<strong>Done</strong>";
+      document.getElementById("timerPill").innerHTML = "<strong>Voltooid</strong>";
       beep(); beep();
       releaseWakeLock();
     }
@@ -1001,7 +1056,7 @@ function renderTimer(){
 }
 
 function renderWake(){
-  document.getElementById("wakeLockState").textContent = wakeLock ? "ON" : "off";
+  document.getElementById("wakeLockState").textContent = wakeLock ? "AAN" : "uit";
 }
 
 /* ---- UI BUILD ---- */
@@ -1172,6 +1227,11 @@ function renderSetCounters(){
   const p = currentSession.practice.type;
   list.innerHTML = '';
 
+  if(p==='P1' && state.sn.pendingRetest){
+    wrap.style.display = 'none';
+    return;
+  }
+
   const rows = [];
   if(p==='P1'){
     rows.push({label:'Core (3 rounds)', key:'core', target:3, adjustable:false});
@@ -1192,7 +1252,7 @@ function renderSetCounters(){
   }
 
   wrap.style.display = '';
-  sub.textContent = 'Tap + after each completed set (simple check-off).';
+  sub.textContent = 'Tik op + na iedere voltooide set.';
 
   let totalDone = 0;
   let totalTarget = 0;
@@ -1233,7 +1293,7 @@ function renderRepCounter(){
   document.getElementById("repR").textContent = String(state.repCounter.R);
 
   const done = (state.repCounter.L >= target && state.repCounter.R >= target);
-  document.getElementById("repCounterHint").textContent = done ? "Done: you hit target reps on both arms." : "Tap + after each strict rep. Rest as needed to keep clean reps.";
+  document.getElementById("repCounterHint").textContent = done ? "Klaar: het doel is met beide armen behaald." : "Tik op + na iedere strikte rep. Neem genoeg rust voor technisch zuivere herhalingen.";
 }
 
 
@@ -1271,12 +1331,18 @@ function setDefaultTimerPresets(){
 
   if(p==="P1"){
     presetA.textContent = "TGU OTM 20:00";
-    presetB.textContent = "Snatch cadence";
+    presetB.textContent = currentSession.sn.retest ? "Hertest — geen timer" : "Snatch cadence";
 
     presetA.onclick = ()=> setTimer({label:"TGU — 10×1 OTM (20:00)", intervalSec:60, rounds:20, preset:"TGU"});
-    presetB.onclick = ()=> setSnatchTimerPreset();
+    presetB.onclick = ()=> currentSession.sn.retest
+      ? setTimer({label:"Snatch max-rep hertest — rust zoals voorgeschreven", intervalSec:60, rounds:0, preset:"NONE"})
+      : setSnatchTimerPreset();
 
-    setSnatchTimerPreset();
+    if(currentSession.sn.retest){
+      setTimer({label:"Snatch max-rep hertest — geen cadanstimer", intervalSec:60, rounds:0, preset:"NONE"});
+    }else{
+      setSnatchTimerPreset();
+    }
   }else if(p==="P2A"){
     presetA.textContent = restBtnLabel;
     presetB.textContent = "—";
@@ -1303,12 +1369,11 @@ function setDefaultTimerPresets(){
 }
 
 function setSnatchTimerPreset(){  const sn = currentSession.sn;
+  if(!sn || sn.retest) return;
   const reps = sn.reps;
   const sets = sn.sets;
 
-  const auto120 = (state.sn.cadence75Done||0) >= getSnCadenceAfter();
-
-  if(auto120){
+  if(sn.cadence===120){
     setTimer({label:`Snatch — Bracket ${sn.bracket} ${sn.day.toUpperCase()} · 10 reps / 2:00`, intervalSec:120, rounds:Math.ceil(reps/10), preset:"SN_120"});
   }else{
     setTimer({label:`Snatch — Bracket ${sn.bracket} ${sn.day.toUpperCase()} · 5 reps / 75s`, intervalSec:75, rounds:sets, preset:"SN_75"});
@@ -1317,16 +1382,31 @@ function setSnatchTimerPreset(){  const sn = currentSession.sn;
 
 /* ---- Render ---- */
 function freqLabel(f){
-  if(f===2) return "2 days/week";
-  if(f===3) return "3 days/week";
-  return "4 days/week";
+  if(f===2) return "2× per week";
+  if(f===3) return "3× per week";
+  return "4× per week";
+}
+
+function renderSnRetest(){
+  const wrap = document.getElementById("snRetestWrap");
+  const active = !!(currentSession && currentSession.practice.type==="P1" && state.sn.pendingRetest);
+  wrap.style.display = active ? "" : "none";
+  if(!active) return;
+
+  const afterB2 = state.sn.pendingRetest==="b2";
+  const bell = state.settings.snBell || "huidige bell";
+  document.getElementById("snRetestReason").textContent = afterB2 ? "Na Bracket 2" : "Na Bracket 4";
+  document.getElementById("snRetestIntro").textContent = afterB2
+    ? `Test ${bell} kg opnieuw. Bij minstens 10 extra explosieve reps per arm test je daarna de volgende bell.`
+    : `Test ${bell} kg na enkele rustige dagen. Test de volgende bell wanneer beide armen opnieuw meer dan 25 explosieve reps halen.`;
+  document.getElementById("snRetestNextHelp").textContent = "Een nieuwe bell wordt alleen geaccepteerd wanneer beide armen 20–25 explosieve reps halen.";
 }
 
 function render(){
   currentSession = getLockedSession();
   const p = currentSession.practice;
 
-  document.getElementById("dayTitle").textContent = `Day ${state.dayNumber}`;
+  document.getElementById("dayTitle").textContent = `Sessie ${state.dayNumber}`;
   document.getElementById("daySub").textContent = p.label;
   document.getElementById("pillPractice").textContent = p.type;
 
@@ -1342,7 +1422,8 @@ function render(){
   document.getElementById("badgeMP").textContent = `MP: ${mpBell} kg · ${MP_LADDER_LABEL[state.mp.ladder]}`;
   document.getElementById("badgeMProll").textContent = (p.type==="P1") ? "MP: —" : `MP roll: ${currentSession.mp.roll}`;
 
-  document.getElementById("snFailWrap").style.display = (p.type==="P1") ? "" : "none";
+  const isSnRetest = p.type==="P1" && currentSession.sn && currentSession.sn.retest;
+  document.getElementById("snFailWrap").style.display = (p.type==="P1" && !isSnRetest) ? "" : "none";
   document.getElementById("mpFailWrap").style.display = (p.type==="P1") ? "none" : "";
   document.getElementById("mpRoll6Wrap").style.display = (p.type==="P1") ? "none" : "";
 
@@ -1357,9 +1438,15 @@ function render(){
 
   if(p.type==="P1"){
     const sn = currentSession.sn;
-    list.appendChild(exRow("Turkish Get Up", "10×1 OTM (20:00)", "1 rep per minute. Kies preset 'TGU OTM 20:00' als je wil."));
-    list.appendChild(exRow("Single Arm Snatch", `${sn.day.toUpperCase()} — Bracket ${sn.bracket}: ${sn.reps} reps`, `Sets: ${sn.sets}×5. Auto-switch naar 10/2 na ${getSnCadenceAfter()} succesvolle 5/75 sessies.`));
-    list.appendChild(exRow("Core", "3×8 each", "Ab wheel + Side bend + Rotation (rest as needed)."));
+    if(sn.retest){
+      list.appendChild(exRow("Snatch max-rep hertest", `Na Bracket ${state.sn.pendingRetest==="b2" ? "2" : "4"}`, "Voer eerst de hertest hieronder uit; een gewone snatchtraining kan pas daarna worden afgerond."));
+    }else{
+      list.appendChild(exRow("Turkish Get Up", "10×1 OTM (20:00)", "1 rep per minuut per zijde afwisselend; totaal 10 links en 10 rechts."));
+      const cadenceText = sn.cadence===120 ? "10 reps / 2:00 (eenmalige stimulus)" : "5 reps / 75 sec";
+      const setText = sn.cadence===120 ? `${Math.ceil(sn.reps/10)}×10` : `${sn.sets}×5`;
+      list.appendChild(exRow("Single Arm Snatch", `${sn.day.toUpperCase()} — Bracket ${sn.bracket}: ${sn.reps} reps`, `${setText}, links/rechts afwisselen · ${cadenceText}.`));
+      list.appendChild(exRow("Core", "3×8 each", "Ab wheel + Side bend + Rotation (rest as needed)."));
+    }
   }else{
     const mp = currentSession.mp;
     const ladder = mp.ladder;
@@ -1410,6 +1497,8 @@ function render(){
     }
   }
 
+  renderSnRetest();
+
 
   // Reminder / notice
   const nw = document.getElementById("noticeWrap");
@@ -1421,7 +1510,7 @@ function render(){
     document.getElementById("noticeText").textContent = "—";
   }
 
-  document.getElementById("nextHint").textContent = `Next: ${previewNext()}`;
+  document.getElementById("nextHint").textContent = `Hierna: ${previewNext()} · ${nextTrainingLabel()}`;
 
   renderRepCounter();
   renderSetCounters();
@@ -1439,15 +1528,20 @@ function previewNext(){
 
   const seq = (Number(tmp.settings.freq||4)===4) ? PRACTICES_4 : (Number(tmp.settings.freq||4)===3) ? PRACTICES_3 : PRACTICES_2;
   const token = seq[tmp.sessionIndex % seq.length];
-  const label = (token==="P1") ? "Practice 1 (Snatch)" :
-                (token==="P2" ? `Practice 2 (${tmp.pressAlt==="A" ? "A" : "B"})` :
-                (token==="P2A" ? "Practice 2A" : "Practice 2B"));
+  const label = (token==="P1") ? "Training 1 · Snatch" :
+                (token==="P2" ? `Training 2${tmp.pressAlt==="A" ? "A" : "B"} · Press` :
+                (token==="P2A" ? "Training 2A · Press" : "Training 2B · Press"));
   return label;
 }
 
 /* ---- Complete & Next ---- */
 function completeAndNext(){
   const p = currentSession.practice.type;
+
+  if(p==="P1" && state.sn.pendingRetest){
+    document.getElementById("snRetestMsg").textContent = "Rond eerst de snatch-hertest af. De app bepaalt daarna automatisch de volgende training.";
+    return;
+  }
 
   if(p==="P1"){
     const success = !document.getElementById("snFail").checked;
@@ -1459,11 +1553,13 @@ function completeAndNext(){
     state.pressAlt = (state.pressAlt==="A") ? "B" : "A";
   }
 
+  const completedIndex = state.sessionIndex;
+  const nextDate = new Date();
+  const restDays = state.sn.pendingRetest==="b4" ? Math.max(3, restDaysAfterSession(completedIndex)) : restDaysAfterSession(completedIndex);
+  nextDate.setDate(nextDate.getDate() + restDays);
+  state.nextTrainingAt = nextDate.getTime();
   state.sessionIndex += 1;
   state.dayNumber += 1;
-
-  // Clear reminder once you move on
-  state.ui.notice = null;
 
   // unlock current session so next render generates the next day
   state.activeSession = null;
@@ -1474,16 +1570,20 @@ function completeAndNext(){
 
 /* ---- Tabs ---- */
 const tabs = Array.from(document.querySelectorAll(".tab"));
+function activateTab(t){
+  tabs.forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");
+  const name = t.dataset.tab;
+  document.getElementById("tab-training").style.display = (name==="training") ? "" : "none";
+  document.getElementById("tab-settings").style.display = (name==="settings") ? "" : "none";
+  document.getElementById("tab-status").style.display = (name==="status") ? "" : "none";
+  if(name==="settings") renderSettings();
+  if(name==="status") renderStatus();
+}
 tabs.forEach(t=>{
-  t.addEventListener("click", ()=>{
-    tabs.forEach(x=>x.classList.remove("active"));
-    t.classList.add("active");
-    const name = t.dataset.tab;
-    document.getElementById("tab-training").style.display = (name==="training") ? "" : "none";
-    document.getElementById("tab-settings").style.display = (name==="settings") ? "" : "none";
-    document.getElementById("tab-status").style.display = (name==="status") ? "" : "none";
-    if(name==="settings") renderSettings();
-    if(name==="status") renderStatus();
+  t.addEventListener("click", ()=>activateTab(t));
+  t.addEventListener("keydown", e=>{
+    if(e.key==="Enter" || e.key===" "){ e.preventDefault(); activateTab(t); }
   });
 });
 
@@ -1501,8 +1601,6 @@ function renderSettings(){
   document.getElementById("snHighTarget").value = String(state.settings.snHighTarget||6);
   document.getElementById("snCadenceAfter").value = String(state.settings.snCadenceAfter||6);
   document.getElementById("mpRoll6Target").value = String(state.settings.mpRoll6Target||6);
-  document.getElementById("remindSnAfterB2").checked = (state.settings.remindSnAfterB2 ?? true);
-  document.getElementById("remindSnAfterB4").checked = (state.settings.remindSnAfterB4 ?? true);
   document.getElementById("addLoadedCleans").checked = (state.settings.addLoadedCleans ?? false);
 
 
@@ -1521,8 +1619,9 @@ function renderSettings(){
 }
 
 function saveSettings(){
-
+  const previousFreq = Number(state.settings.freq||4);
   state.settings.freq = Number(document.getElementById("freq").value);
+  if(state.settings.freq !== previousFreq) state.nextTrainingAt = null;
   state.settings.snBell = document.getElementById("snBell").value.trim();
   state.settings.mpBell = document.getElementById("mpBell").value.trim();
   state.settings.mpRestSec = document.getElementById("mpRestSec").value.trim();
@@ -1532,8 +1631,6 @@ function saveSettings(){
   state.settings.snHighTarget = document.getElementById("snHighTarget").value;
   state.settings.snCadenceAfter = document.getElementById("snCadenceAfter").value;
   state.settings.mpRoll6Target = document.getElementById("mpRoll6Target").value;
-  state.settings.remindSnAfterB2 = document.getElementById("remindSnAfterB2").checked;
-  state.settings.remindSnAfterB4 = document.getElementById("remindSnAfterB4").checked;
   state.settings.addLoadedCleans = document.getElementById("addLoadedCleans").checked;
 
   // Persist initial test fields (no automatic changes unless you press Apply)
@@ -1548,7 +1645,7 @@ function saveSettings(){
 
   save();
   render();
-  document.getElementById("saveMsg").textContent = "Saved.";
+  document.getElementById("saveMsg").textContent = "Opgeslagen.";
   setTimeout(()=> document.getElementById("saveMsg").textContent="", 1000);
 }
 
@@ -1562,13 +1659,15 @@ function updateTestRecommendations(){
   let snRec = "—";
   if(snBell!==null && Number.isFinite(snL) && Number.isFinite(snR)){
     const mn = Math.min(snL, snR);
-    const mx = Math.max(snL, snR);
-    let rec = snBell;
-    if(!quality) rec = snBell - 4;
-    else if(mn < 20) rec = snBell - 4;
-    else if(mx > 25 && mn >= 20) rec = snBell + 4;
-    rec = Math.max(0, roundDown4(rec));
-    snRec = `${rec} kg` + ((rec===snBell) ? " (use test bell)" : " (adjusted)");
+    if(!quality || mn<20){
+      snRec = `Test de volgende lichtere bell; ${snBell} kg is nog niet bevestigd`;
+    }else if(snL>25 && snR>25){
+      snRec = `Test de volgende zwaardere bell; ${snBell} kg is te licht`;
+    }else if(snL<=25 && snR<=25){
+      snRec = `${snBell} kg (bevestigd: beide armen 20–25)`;
+    }else{
+      snRec = `${snBell} kg nog niet bevestigd: beide armen moeten binnen 20–25 vallen`;
+    }
   } else if(snBell!==null){
     snRec = `${roundDown4(snBell)} kg (enter reps)`;
   }
@@ -1579,35 +1678,23 @@ function updateTestRecommendations(){
 
   let mpRec = "—";
   if(mpBell!==null && Number.isFinite(mpND)){
-    let recBell = mpBell;
-    let recLadder = "123";
-
     if(mpND < 6){
-      recBell = mpBell - 4;
-      recLadder = "123";
+      mpRec = `Test de volgende lichtere bell; ${mpBell} kg is nog niet bevestigd`;
     }else if(mpND >= 10){
       if(Number.isFinite(mpNext)){
         if(mpNext >= 10){
-          recBell = mpBell + 4;
-          recLadder = "345";
+          mpRec = `Test nog een bell zwaarder; +4 kg gaf opnieuw 10+ reps`;
         }else if(mpNext >= 6){
-          recBell = mpBell + 4;
-          recLadder = "123";
+          mpRec = `${mpBell+4} kg · ${MP_LADDER_LABEL["123"]}`;
         }else{
-          recBell = mpBell;
-          recLadder = "345";
+          mpRec = `${mpBell} kg · ${MP_LADDER_LABEL["345"]}`;
         }
       }else{
-        recBell = mpBell;
-        recLadder = "345";
+        mpRec = `Test eerst de volgende bell (+4 kg)`;
       }
     }else{
-      recBell = mpBell;
-      recLadder = "123";
+      mpRec = `${mpBell} kg · ${MP_LADDER_LABEL["123"]}`;
     }
-
-    recBell = Math.max(0, roundDown4(recBell));
-    mpRec = `${recBell} kg · ${MP_LADDER_LABEL[recLadder]}`;
   } else if(mpBell!==null){
     mpRec = `${roundDown4(mpBell)} kg (enter ND reps)`;
   }
@@ -1633,13 +1720,9 @@ function applyTestsAndRestart(){
 
   let newSn = null;
   if(snBell!==null && Number.isFinite(snL) && Number.isFinite(snR)){
-    const mn = Math.min(snL, snR);
-    const mx = Math.max(snL, snR);
-    let rec = snBell;
-    if(!quality) rec = snBell - 4;
-    else if(mn < 20) rec = snBell - 4;
-    else if(mx > 25 && mn >= 20) rec = snBell + 4;
-    newSn = Math.max(0, roundDown4(rec));
+    if(quality && snL>=20 && snL<=25 && snR>=20 && snR<=25){
+      newSn = snBell;
+    }
   }
 
   const mpBell = num(state.settings.mpTestBell);
@@ -1649,33 +1732,23 @@ function applyTestsAndRestart(){
   let newMp = null;
   let newLadder = null;
   if(mpBell!==null && Number.isFinite(mpND)){
-    let recBell = mpBell;
-    let recLadder = "123";
-    if(mpND < 6){
-      recBell = mpBell - 4;
-      recLadder = "123";
+    if(mpND >= 6 && mpND < 10){
+      newMp = mpBell;
+      newLadder = "123";
     }else if(mpND >= 10){
       if(Number.isFinite(mpNext)){
-        if(mpNext >= 10){
-          recBell = mpBell + 4;
-          recLadder = "345";
-        }else if(mpNext >= 6){
-          recBell = mpBell + 4;
-          recLadder = "123";
+        if(mpNext >= 6 && mpNext < 10){
+          newMp = mpBell + 4;
+          newLadder = "123";
+        }else if(mpNext < 6){
+          newMp = mpBell;
+          newLadder = "345";
         }else{
-          recBell = mpBell;
-          recLadder = "345";
+          newMp = null;
+          newLadder = null;
         }
-      }else{
-        recBell = mpBell;
-        recLadder = "345";
       }
-    }else{
-      recBell = mpBell;
-      recLadder = "123";
     }
-    newMp = Math.max(0, roundDown4(recBell));
-    newLadder = recLadder;
   }
 
   if(newSn!==null) state.settings.snBell = String(newSn);
@@ -1685,9 +1758,14 @@ function applyTestsAndRestart(){
   // Restart program from this calibrated start
   state.sessionIndex = 0;
   state.dayNumber = 1;
+  state.nextTrainingAt = null;
   state.pressAlt = "A";
 
-  state.sn = { bracket:1, phase:"startup", cycleIndex:0, nextDay:"low", lmNext:"low", highSuccess:0, cadence75Done:0 };
+  state.sn = {
+    bracket:1, phase:"startup", cycleIndex:0, nextDay:"low", lmNext:"low",
+    highSuccess:0, cadence75Done:0, pendingRetest:null,
+    baselineBell:newSn, baselineL:newSn!==null ? snL : null, baselineR:newSn!==null ? snR : null
+  };
   state.mp.lastRoll = null;
   state.mp.forceNext3 = false;
   state.mp.heavyLog = [];
@@ -1701,14 +1779,14 @@ function applyTestsAndRestart(){
   renderSettings();
 
   const msg = [];
-  if(newSn===null) msg.push("SN test incomplete → SN bell not changed.");
+  if(newSn===null) msg.push("SN test nog niet geldig: test verder tot beide armen 20–25 explosieve reps halen; SN bell niet gewijzigd.");
   else msg.push(`SN bell set to ${newSn} kg.`);
-  if(newMp===null) msg.push("MP test incomplete → MP bell/ladder not changed.");
+  if(newMp===null) msg.push("MP test nog niet afgerond: volg het zwaarder/lichter-testadvies; MP bell/ladder niet gewijzigd.");
   else msg.push(`MP bell set to ${newMp} kg, start ladder ${MP_LADDER_LABEL[newLadder]}.`);
   document.getElementById("testMsg").textContent = msg.join(" ");
 }
 function resetAll(){
-  if(!confirm("Reset ALL saved data on this device?")) return;
+  if(!confirm("Alle opgeslagen trainingsgegevens op dit apparaat wissen?")) return;
   localStorage.removeItem(KEY);
   state = clone(DEFAULT);
   save();
@@ -1726,15 +1804,16 @@ function renderStatus(){
   s.push(`<div class="badges">
     <span class="badge blue">Day <span class="mono">${state.dayNumber}</span></span>
     <span class="badge blue">Freq <span class="mono">${state.settings.freq}/wk</span></span>
+    <span class="badge blue">Volgende training <span class="mono">${nextTrainingLabel()}</span></span>
   </div>`);
 
   s.push(`<div class="hr"></div>`);
+  const snStatus = state.sn.pendingRetest
+    ? `Hertest vereist na Bracket ${state.sn.pendingRetest==="b2" ? "2" : "4"} · gewone snatchprogressie gepauzeerd`
+    : `Bracket: <span class="mono">${state.sn.bracket}</span>/4 · Hierna: <span class="mono">${sn.day.toUpperCase()}</span> (${sn.reps} reps) · Cadans: <span class="mono">${sn.cadence===120 ? "10/2 (eenmalig)" : "5/75"}</span> · Geslaagde HIGH-dagen: <span class="mono">${state.sn.highSuccess}</span>/${getSnHighTarget()} · succesvolle 5/75 sinds laatste 10/2: <span class="mono">${state.sn.cadence75Done||0}</span>`;
   s.push(`<div class="toggle"><div>
     <div style="font-weight:950">Snatch</div>
-    <div class="small">
-      Bracket: <span class="mono">${state.sn.bracket}</span>/4 · Next: <span class="mono">${sn.day.toUpperCase()}</span> (${sn.reps} reps / ${sn.sets}×5) · High-success: <span class="mono">${state.sn.highSuccess}</span>/${getSnHighTarget()}
-      · 5/75 successful: <span class="mono">${state.sn.cadence75Done||0}</span> (auto 10/2 after ${getSnCadenceAfter()})
-    </div>
+    <div class="small">${snStatus}</div>
   </div></div>`);
 
   s.push(`<div class="toggle" style="margin-top:10px"><div>
@@ -1759,6 +1838,7 @@ document.getElementById("btnComplete").addEventListener("click", completeAndNext
 
 document.getElementById("btnSave").addEventListener("click", saveSettings);
 document.getElementById("btnApplyTests").addEventListener("click", applyTestsAndRestart);
+document.getElementById("btnEvaluateSnRetest").addEventListener("click", evaluateSnRetest);
 
 // Live recommendation updates (UI only)
 ["snTestBell","snTestL","snTestR","snTestQuality","mpTestBell","mpTestND","mpTestNext"].forEach(id=>{
